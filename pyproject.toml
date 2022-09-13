@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "fsdl-2022-semantic-search-qa"
+version = "0.1.0"
+description = ""
+authors = ["Various Authors"]
+readme = "README.md"
+packages = [{include = "semantic_search_qa", from = "src"}]
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.9.7 || >3.9.7,<4.0"  # this is because the streamlit version
+datasets = "^2.4.0"
+pandas = "^1.4.4"
+pytorch-lightning = "^1.7.5"
+streamlit = "^1.12.2"
+transformers = "^4.21.3"
+ipykernel = "^6.15.2"
+
+[tool.poetry.group.dev.dependencies]
+black = "^22.8.0"
+flake8 = "^5.0.4"
+mypy = "^0.971"
+pytest = "^7.1.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
