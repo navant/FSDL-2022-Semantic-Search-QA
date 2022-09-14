@@ -45,3 +45,13 @@ If you want to run linting before commit, stage files and then run:
 
 NOTE: If at some point some of the linting errors slows down our goal (e.g. typing with mypy or docstring) we 
 can decide to relax the rules.
+
+### Local Inference App Launch
+
+We use streamlit so...
+
+```sh
+streamlit run src/semantic_search_qa/ui/01_main.py
+```
+
+Then check it out here: [http://localhost:8501/](http://localhost:8501/)
