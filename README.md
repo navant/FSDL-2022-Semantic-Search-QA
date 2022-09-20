@@ -45,3 +45,29 @@ If you want to run linting before commit, stage files and then run:
 
 NOTE: If at some point some of the linting errors slows down our goal (e.g. typing with mypy or docstring) we 
 can decide to relax the rules.
+
+### Local Inference App Launch
+
+We use streamlit so...
+
+```sh
+streamlit run src/semantic_search_qa/ui/01_main.py
+```
+
+Then check it out here: [http://localhost:8501/](http://localhost:8501/)
+
+## Dockerized Inference App Launch
+```sh
+docker build -t semantic_search_qa .
+docker run -it --rm -p8501:8501 -p54321:54321 semantic_search_qa
+```
+
+Then go to [http://localhost:8501](http://localhost:8501)
+
+## Jina
+
+### Notes
+- v3.8.0 doesn't show depency problems
+- If an error similar to `...may have been in progress in another thread when fork() was called` shows in your Mac, do `export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES`
+
+

@@ -1,0 +1,4 @@
+jtype: QAExecutor
+metas:
+  py_modules:
+    - qa_exec.py
