@@ -1,0 +1,9 @@
+jtype: Flow
+version: '1'
+with:
+  # protocol: http
+  port: 54321
+  
+executors:
+  - uses: qa/config.yml
+    name: qaExecutor
