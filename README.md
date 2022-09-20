@@ -29,3 +29,19 @@ code .
 ```
 
 Then, in VS Code, choose the interpreter and kernel from the virtual environment.
+
+### Linting
+
+Main considerations:
+- 120 chars per line (setup your editor for that)
+- FSDL chose google style over pep8 (we can change it if we want to)
+
+Adopted linting strategy from FSDL Course adding isort and autoflake for dealing with imports.
+
+If you want to run linting before commit, stage files and then run:
+```sh
+./project_tasks/lint.sh
+```
+
+NOTE: If at some point some of the linting errors slows down our goal (e.g. typing with mypy or docstring) we 
+can decide to relax the rules.
