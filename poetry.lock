@@ -1268,6 +1268,23 @@ optional = false
 python-versions = ">=3.7"
 
 [[package]]
+name = "pdfminer.six"
+version = "20220524"
+description = "PDF parser and analyzer"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+charset-normalizer = ">=2.0.0"
+cryptography = ">=36.0.0"
+
+[package.extras]
+dev = ["black", "mypy (==0.931)", "nox", "pytest"]
+docs = ["sphinx", "sphinx-argparse"]
+image = ["Pillow"]
+
+[[package]]
 name = "pexpect"
 version = "4.8.0"
 description = "Pexpect allows easy control of interactive console applications."
@@ -2327,7 +2344,7 @@ testing = ["func-timeout", "jaraco.itertools", "pytest (>=6)", "pytest-black (>=
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.9.7 || >3.9.7,<4.0"  # this is because the streamlit version
-content-hash = "e1d84d489fb80f72bdfe23c15c454ed7593d478c4c2bc6e9973447615cf2ea8a"
+content-hash = "13680a583bb2001f4c141b486fcd03473c8222c55fa0128f2e182a45a0a2e7dc"
 
 [metadata.files]
 absl-py = [
@@ -3392,6 +3409,10 @@ parso = [
 pathspec = [
     {file = "pathspec-0.10.1-py3-none-any.whl", hash = "sha256:46846318467efc4556ccfd27816e004270a9eeeeb4d062ce5e6fc7a87c573f93"},
     {file = "pathspec-0.10.1.tar.gz", hash = "sha256:7ace6161b621d31e7902eb6b5ae148d12cfd23f4a249b9ffb6b9fee12084323d"},
+]
+"pdfminer.six" = [
+    {file = "pdfminer.six-20220524-py3-none-any.whl", hash = "sha256:7e19b857ec76bcbd35665909ad8965a481ad48d9bdff6c45f8522ee66f8a7aab"},
+    {file = "pdfminer.six-20220524.tar.gz", hash = "sha256:5a64c924410ac48501d6060b21638bf401db69f5b1bd57207df7fbc070ac8ae2"},
 ]
 pexpect = [
     {file = "pexpect-4.8.0-py2.py3-none-any.whl", hash = "sha256:0b48a55dcb3c05f3329815901ea4fc1537514d6ba867a152b581d69ae3710937"},
