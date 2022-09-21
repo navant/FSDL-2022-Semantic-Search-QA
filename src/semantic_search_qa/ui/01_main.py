@@ -7,11 +7,14 @@ import pandas as pd
 import streamlit as st
 from jina import Client, Document
 
+from semantic_search_qa.ui.ui_utils import EXAMPLE_DOC
 from semantic_search_qa.utils import pdf2text
+
+example_doc = EXAMPLE_DOC  # or just do """"""
 
 
 def clear_text():
-    st.session_state["text"] = ""
+    st.session_state["text"] = example_doc
     st.session_state["text_disabled"] = False
 
 
@@ -33,13 +36,14 @@ def extract_content(uploaded_file: Optional[st.runtime.uploaded_file_manager.Upl
         return ""
 
 
-def send_qa_request(content: str, query: str, host: str, port: int, endpoint: str = "/qa", n_of_results: int = 5):
-    if content == "":
+def send_qa_request(raw_doc_text: str, query: str, host: str, port: int, endpoint: str = "/qa", n_of_results: int = 5):
+    if raw_doc_text == "":
         st.warning("There's no text to send! Add a document or write/copy your text!")
         return
     client = Client(host=host, port=port)
     params = {"query": query, "n_of_results": n_of_results}
-    st.session_state["results"] = client.post(endpoint, Document(content=content), parameters=params)
+    # We send a single Document for now. TODO: Explore the posibiltiy of sending a DocumentArray with more docs
+    st.session_state["results"] = client.post(endpoint, Document(text=raw_doc_text), parameters=params)
     clear_text()
     st.session_state["feedback_sent"] = False
     st.session_state["text_disabled"] = True
@@ -84,7 +88,7 @@ with c1:
         content = st.session_state["text"]
         content_disabled = st.session_state["text_disabled"]
     except KeyError:
-        content = ""
+        content = example_doc
         content_disabled = False
     text_content_placeholder = st.empty()
     text_content = text_content_placeholder.text_area(
@@ -98,7 +102,7 @@ with c2:
             "Content (max 500 words)", st.session_state["text"], height=510, disabled=content_disabled, key="k2"
         )
     else:
-        st.session_state["text"] = ""
+        st.session_state["text"] = example_doc
 
 
 with st.form("main-form", clear_on_submit=True):
@@ -108,10 +112,11 @@ with st.form("main-form", clear_on_submit=True):
     submit_btn = st.form_submit_button(label="Fire!")
     if submit_btn:
         req_args = {
-            "content": text_content,
+            "raw_doc_text": text_content,
             "query": query,
             "host": client_params["host"],
             "port": client_params["port"],
+            "endpoint": "/doc_chunker",
             "n_of_results": n_of_results,
         }
         send_qa_request(**req_args)
@@ -126,8 +131,10 @@ st.header("Results")
 
 docs = st.session_state.results
 for i, doc in enumerate(docs):
-    st.markdown(f"### Answer {i}")
-    st.info(f"{doc.text}")
+    st.markdown(f"### Document {i}")
+    for j, c in enumerate(doc.chunks):
+        st.markdown(f"### Chunk {j}")
+        st.info(f"{c.text}")
 
 st.markdown("## Feedback")
 

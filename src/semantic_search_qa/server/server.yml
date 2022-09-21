@@ -5,5 +5,8 @@ with:
   port: 54321
   
 executors:
-  - uses: qa/config.yml
-    name: qaExecutor
+  - name: docChunkerExecutor
+    uses: doc_chunker/config.yml
+  - name: qaExecutor
+    uses: qa/config.yml
+    
