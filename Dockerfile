@@ -31,7 +31,7 @@ RUN . /venv/bin/activate && poetry install --no-dev --no-root
 # Copy only the relevant directories
 #   note that we use a .dockerignore file to avoid copying logs etc.
 COPY . .
-RUN . /venv/bin/activate && poetry build
+RUN . /venv/bin/activate && poetry build && /venv/bin/pip install dist/*.whl
 
 RUN ls -la ../venv/bin
 ENV PATH="${PATH}:../venv/bin"
