@@ -1,0 +1,4 @@
+jtype: DocChunkerExecutor
+metas:
+  py_modules:
+    - doc_chunker_exec.py

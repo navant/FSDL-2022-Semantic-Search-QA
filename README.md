@@ -62,7 +62,8 @@ docker build -t semantic_search_qa .
 docker run -it --rm -p8501:8501 -p54321:54321 semantic_search_qa
 ```
 
-Then go to [http://localhost:8501](http://localhost:8501)
+Then go to [http://localhost:8501](http://localhost:8501) and just press the "Fire!" button under the default text/question provided.
+You will receive the responses below and a form to optionally provide feedback about the accuracy of the received responses.
 
 ## Jina
 
