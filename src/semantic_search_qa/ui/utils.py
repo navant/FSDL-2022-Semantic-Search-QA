@@ -1,5 +1,6 @@
-from bokeh.models.widgets import Div
 import streamlit as st
+from bokeh.models.widgets import Div
+
 
 def open_link(url, new_tab=True):
     if new_tab:
