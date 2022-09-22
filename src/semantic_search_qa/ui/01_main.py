@@ -133,16 +133,31 @@ docs = st.session_state.results
 for i, doc in enumerate(docs):
     st.markdown(f"### Document {i}")
     for j, c in enumerate(doc.chunks):
-        st.markdown(f"### Chunk {j}")
-        st.info(f"{c.text}")
+        st.markdown(f"### Chunk {j} (Score: {c.scores['score'].value})")
+        c1, c2 = st.columns(2)
+        with c1:
+            start = int(c.tags["start"])
+            end = int(c.tags["end"])
+            start_text = c.text[:start]
+            target_text = c.text[start:end]
+            end_text = c.text[end:]
+            st.markdown(
+                f"{start_text} <mark><span style='font-family:sans-serif; color:Green;'>{target_text}</span></mark> {end_text}",
+                unsafe_allow_html=True,
+            )
+        with c2:
+            st.json(f"{c.tags}")
 
 st.markdown("## Feedback")
+
+# Put this into session state to get it inside form
+st.session_state.n_results = len(st.session_state.results[0].chunks)
 
 with st.form("feedback-form", clear_on_submit=True):
     feedback_file = st.text_input("File to save feedback", "/tmp/feedback.tsv")
     user_best_answer = st.selectbox(
         "If you don't like the first answer, what do you think it's the best one?",
-        [str(i) for i in range(0, len(docs))] + ["Not Provided"],
+        [str(i) for i in range(0, st.session_state.n_results)] + ["Not Provided"],
     )
 
     c1, c2 = st.columns([1, 1])
@@ -157,7 +172,7 @@ with st.form("feedback-form", clear_on_submit=True):
             "text": text_content,
             "query": query,
             "best_predicted_answer": docs[0].text,
-            "user_preferred_answer": docs[int(user_best_answer)].text
+            "user_preferred_answer": docs[0].chunks[int(user_best_answer)].text
             if user_best_answer != "Not Provided"
             else "Not Provided",
         }
