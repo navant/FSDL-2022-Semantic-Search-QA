@@ -1,15 +1,13 @@
 from typing import Any, Dict
 
-from jina import Document, DocumentArray, Executor, requests
+from docarray.score import NamedScore
+from jina import DocumentArray, Executor, requests
 from transformers.pipelines import pipeline
-from typing_extensions import Self
 
 from semantic_search_qa.server.server_utils import log_exec_basics
 
-# model = "deepset/minilm-uncased-squad2")
-# model = "deepset/roberta-base-squad2")
-
 param_top_k_ranker = 3
+model = "anablasi/qa_financial_v2"
 
 
 class QAExecutor(Executor):
@@ -19,8 +17,10 @@ class QAExecutor(Executor):
         :param device: The pytorch device that the model is on, e.g. 'cpu', 'cuda', 'cuda:1'
         """
         super().__init__(*args, **kwargs)
-        # self.qa_pipeline = pipeline("question-answering", model = "anablasi/qa_financial_v2")
+        self.logger.info(f"Creating HF pipeline for QA from model {model}")
+        self.qa_pipeline = pipeline("question-answering", model=model)
 
+    # TODO This should be done in the ranker based on
     def qa_ranker(self, query, paragraphs, top_k_ranker):
         ans = []
         for doc in paragraphs:
@@ -33,12 +33,14 @@ class QAExecutor(Executor):
     async def add_text(self, docs: DocumentArray, **kwargs):
         log_exec_basics(self.metas.name, self.logger, docs, kwargs)
 
-        kwargs["docs_matrix"][0]
-        limit_result_idx = int(kwargs["parameters"]["n_of_results"])
-        print(f"--------------------------- Returning only {limit_result_idx} results")
-
-        # result_docs = DocumentArray()
+        query = kwargs["parameters"]["query"]
+        self.logger.info(f"Query: {query}")
+        limit_result_idx = int(kwargs["parameters"]["n_of_results"])  # TODO This should be done in the ranker
+        self.logger.info(f"--------------------------- Returning only {limit_result_idx} results")
         for d in docs:
             for c in d.chunks:
-                c.text = "[Processed on the qa side!]\n" + c.text
-            d.chunks = d.chunks[:limit_result_idx]
+                answer = self.qa_pipeline({"question": query, "context": c.text})
+                self.logger.info(answer)
+                c.scores["score"] = NamedScore(value=answer["score"], description="score")
+                c.tags = answer
+            d.chunks = d.chunks[:limit_result_idx]  # TODO This should be done in the ranker

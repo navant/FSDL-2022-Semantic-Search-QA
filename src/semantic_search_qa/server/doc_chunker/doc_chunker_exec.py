@@ -1,7 +1,4 @@
-import os
-
 from jina import Document, DocumentArray, Executor, requests
-from jina.logging.logger import JinaLogger
 
 from semantic_search_qa.server.server_utils import log_exec_basics
 from semantic_search_qa.utils import chunk_text
@@ -10,8 +7,6 @@ from semantic_search_qa.utils import chunk_text
 class DocChunkerExecutor(Executor):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.logger = JinaLogger("doc_chunker_logger")
-        self.log_path = os.path.join(self.workspace, "doc_chunker_log.txt")
 
     @requests(on="/doc_chunker")
     async def chunk_doc_text(self, docs: DocumentArray, **kwargs):
