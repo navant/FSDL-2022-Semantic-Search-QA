@@ -16,6 +16,8 @@ transformers = "^4.21.3"
 ipykernel = "^6.15.2"
 jina = "v3.8.0"
 "pdfminer.six" = "^20220524"
+protobuf = "3.19.4"                    # required by wandb. Older version b.c. OSX bug with latest protobuf...
+wandb = "^0.13.3"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.8.0"
@@ -26,6 +28,8 @@ shellcheck-py = "^0.8.0.4"
 isort = "^5.10.1"
 pre-commit = "^2.20.0"
 autoflake = "^1.5.3"
+jupyter = "^1.0.0"
+jupyterlab = "^3.4.7"
 
 [build-system]
 requires = ["poetry-core"]
