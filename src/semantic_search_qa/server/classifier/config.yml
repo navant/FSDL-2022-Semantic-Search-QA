@@ -1,0 +1,4 @@
+jtype: ClassifierExecutor
+metas:
+  py_modules:
+    - classifier_exec.py

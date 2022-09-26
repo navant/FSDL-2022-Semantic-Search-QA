@@ -9,4 +9,11 @@ executors:
     uses: doc_chunker/config.yml
   - name: qaExecutor
     uses: qa/config.yml
+    needs: docChunkerExecutor
+  - name: classifierExecutor
+    uses: classifier/config.yml
+    needs: docChunkerExecutor
+  - name: mergerExecutor
+    uses: merger/config.yml
+    needs: [qaExecutor, classifierExecutor]
     
