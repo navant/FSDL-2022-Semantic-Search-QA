@@ -1,0 +1,4 @@
+jtype: MergerExecutor
+metas:
+  py_modules:
+    - merger_exec.py
