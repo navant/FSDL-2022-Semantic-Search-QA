@@ -3,10 +3,8 @@
 # Putting together the jina exploration code in jina_exploration.ipynb.
 
 
-
 from docarray import Document, DocumentArray
-from jina import Flow, Executor, requests
-
+from jina import Executor, Flow, requests
 
 DATA_DIR = "../../notebooks/data/"
 
@@ -38,13 +36,14 @@ class TextChunkMerger(Executor):
 
             # Extend level 1 chunk DocumentArray with the sentences
             for lvl_1_chunk in chunks_lvl_1:
-                doc.chunks.extend(lvl_1_chunk.chunks) 
-            
+                doc.chunks.extend(lvl_1_chunk.chunks)
+
 
 class ImageNormalizer(Executor):
     """
     Normalizes images and resizes them to 64x64 to be fed into a neural network.
     """
+
     @requests(on="/index")
     def normalize_chunks(self, docs, **kwargs):
         for doc in docs:
@@ -60,14 +59,12 @@ class ImageNormalizer(Executor):
                     chunk.set_image_tensor_normalization()
 
 
-
-    
 flow = (
     Flow()
     .add(uses="jinahub+sandbox://PDFSegmenter", install_requirements=True, name="segmenter")
     .add(uses=TextChunkMerger, name="text_chunk_merger")
     .add(uses=ImageNormalizer, name="image_normalizer")
-        .add(
+    .add(
         uses="jinahub+sandbox://CLIPEncoder",
         name="encoder",
         uses_with={"traversal_paths": "@c"},
@@ -83,5 +80,3 @@ flow = (
 
 with flow:
     indexed_docs = flow.index(docs)
-
-
