@@ -12,6 +12,9 @@ executors:
   - name: qaExecutor
     uses: qa/config.yml
     needs: [docChunkerExecutor, docSentencizerExecutor]
+  - name: rankerExecutor
+    uses: ranker/config.yml
+    needs: qaExecutor
   - name: classifierExecutor
     uses: classifier/config.yml
     needs: docChunkerExecutor
