@@ -3,7 +3,6 @@ from io import StringIO
 from time import sleep
 from typing import Optional
 
-import pandas as pd
 import streamlit as st
 from jina import Client, Document
 
@@ -109,17 +108,18 @@ with st.form("main-form", clear_on_submit=True):
     query = st.text_input("Query", "Who's increasing the rates?")
     n_of_results = st.slider("Number of Results", min_value=1, max_value=10, value=5)
 
-    submit_btn = st.form_submit_button(label="Fire!")
-    if submit_btn:
-        req_args = {
-            "raw_doc_text": text_content,
-            "query": query,
-            "host": client_params["host"],
-            "port": client_params["port"],
-            "endpoint": "/doc_chunker",
-            "n_of_results": n_of_results,
-        }
-        send_qa_request(**req_args)
+    with st.spinner("Getting response"):
+        submit_btn = st.form_submit_button(label="Fire!")
+        if submit_btn:
+            req_args = {
+                "raw_doc_text": text_content,
+                "query": query,
+                "host": client_params["host"],
+                "port": client_params["port"],
+                "endpoint": "/doc_chunker",
+                "n_of_results": n_of_results,
+            }
+            send_qa_request(**req_args)
 
 try:
     if st.session_state["feedback_sent"]:
@@ -131,7 +131,32 @@ st.header("Results")
 
 docs = st.session_state.results
 for i, doc in enumerate(docs):
+    sentiment_str = "N/A"
+    try:
+        doc_sentiment = doc.tags["sentiment"]
+        st.write(f"{doc_sentiment} ss {type(doc_sentiment)}")
+        if (
+            doc_sentiment["class"] == "positive"
+        ):  # TODO Check what we have to compare when we return the value in the classifier
+            sentiment_str = f"<span style='font-family:sans-serif; color:Green;'>Positive</span>"
+        else:
+            sentiment_str = f"<span style='font-family:sans-serif; color:Red;'>Negative</span>"
+    except KeyError:
+        st.warning("Couldn't retrieve sentiment for this document :-(")
+
     st.markdown(f"### Document {i}")
+    c1, c2 = st.columns(2)
+    with c1:
+        st.markdown(
+            f"#### {sentiment_str} sentiment",
+            unsafe_allow_html=True,
+        )
+    with c2:
+        st.markdown(
+            f"#### Best response: <span style='font-family:sans-serif; color:Green;'>{doc.chunks[0].tags['answer']}</span>",
+            unsafe_allow_html=True,
+        )
+
     for j, c in enumerate(doc.chunks):
         st.markdown(f"### Chunk {j} (Score: {c.scores['score'].value})")
         c1, c2 = st.columns(2)
