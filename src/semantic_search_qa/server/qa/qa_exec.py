@@ -35,12 +35,9 @@ class QAExecutor(Executor):
 
         query = kwargs["parameters"]["query"]
         self.logger.info(f"Query: {query}")
-        limit_result_idx = int(kwargs["parameters"]["n_of_results"])  # TODO This should be done in the ranker
-        self.logger.info(f"--------------------------- Returning only {limit_result_idx} results")
         for d in docs:
             for c in d.chunks:
                 answer = self.qa_pipeline({"question": query, "context": c.text})
                 self.logger.info(answer)
-                c.scores["score"] = NamedScore(value=answer["score"], description="score")
-                c.tags = answer
-            d.chunks = d.chunks[:limit_result_idx]  # TODO This should be done in the ranker
+                c.scores["qa_score"] = NamedScore(value=answer["score"], description="score")
+                c.tags["qa"] = answer

@@ -131,38 +131,24 @@ st.header("Results")
 
 docs = st.session_state.results
 for i, doc in enumerate(docs):
-    sentiment_str = "N/A"
-    try:
-        doc_sentiment = doc.tags["sentiment"]
-        st.write(f"{doc_sentiment} ss {type(doc_sentiment)}")
-        if (
-            doc_sentiment["class"] == "positive"
-        ):  # TODO Check what we have to compare when we return the value in the classifier
-            sentiment_str = f"<span style='font-family:sans-serif; color:Green;'>Positive</span>"
-        else:
-            sentiment_str = f"<span style='font-family:sans-serif; color:Red;'>Negative</span>"
-    except KeyError:
-        st.warning("Couldn't retrieve sentiment for this document :-(")
 
     st.markdown(f"### Document {i}")
-    c1, c2 = st.columns(2)
-    with c1:
-        st.markdown(
-            f"#### {sentiment_str} sentiment",
-            unsafe_allow_html=True,
-        )
-    with c2:
-        st.markdown(
-            f"#### Best response: <span style='font-family:sans-serif; color:Green;'>{doc.chunks[0].tags['answer']}</span>",
-            unsafe_allow_html=True,
-        )
+
+    best_qa_response = doc.chunks[0].tags["qa"]["answer"]
+    best_qa_score = doc.chunks[0].scores["qa_score"].value
+    st.markdown(
+        f"#### Best response: <span style='font-family:sans-serif; color:Green;'>{best_qa_response} (Score {best_qa_score:.5f})</span>",
+        unsafe_allow_html=True,
+    )
 
     for j, c in enumerate(doc.chunks):
-        st.markdown(f"### Chunk {j} (Score: {c.scores['score'].value})")
-        c1, c2 = st.columns(2)
+        st.markdown(f"### Chunk {j}")
+        c1, c2, c3 = st.columns(3)
         with c1:
-            start = int(c.tags["start"])
-            end = int(c.tags["end"])
+            # QA part
+            st.markdown(f"##### QA Score: {c.scores['qa_score'].value:.5f}")
+            start = int(c.tags["qa"]["start"])
+            end = int(c.tags["qa"]["end"])
             start_text = c.text[:start]
             target_text = c.text[start:end]
             end_text = c.text[end:]
@@ -170,8 +156,25 @@ for i, doc in enumerate(docs):
                 f"{start_text} <mark><span style='font-family:sans-serif; color:Green;'>{target_text}</span></mark> {end_text}",
                 unsafe_allow_html=True,
             )
+            # Sentiment classifier part
+            st.markdown(f"##### CLS Score: {c.scores['cls_score'].value:.5f}")
+            sentiment_str = "N/A"
+            try:
+                doc_sentiment = c.tags["sentiment"]
+                if doc_sentiment["label"] == "positive":
+                    st.success("Positive sentiment!")
+                elif doc_sentiment["label"] == "neutral":
+                    st.warning("Neutral sentiment!")
+                else:
+                    st.error("Negative sentiment!")
+            except KeyError:
+                st.warning("Couldn't retrieve sentiment for this document :-(")
         with c2:
-            st.json(f"{c.tags}")
+            st.write("**QA results details**")
+            st.json(f"{c.tags['qa']}")
+        with c3:
+            st.write("**Classifier results details**")
+            st.json(f"{c.tags['sentiment']}")
 
 st.markdown("## Feedback")
 
