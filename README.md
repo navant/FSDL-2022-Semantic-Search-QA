@@ -54,6 +54,15 @@ We use streamlit so...
 streamlit run src/semantic_search_qa/ui/01_main.py
 ```
 
+To communicate with server also run
+
+```sh
+jina flow -v --uses src/semantic_search_qa/server/server.yml
+```
+
+It is best to run each of these commands in a separate terminal so that you can see the outputs of both.
+
+
 Then check it out here: [http://localhost:8501/](http://localhost:8501/)
 
 ## Dockerized Inference App Launch

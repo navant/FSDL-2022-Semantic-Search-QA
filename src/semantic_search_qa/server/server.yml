@@ -7,9 +7,11 @@ with:
 executors:
   - name: docChunkerExecutor
     uses: doc_chunker/config.yml
+  - name: docSentencizerExecutor
+    uses: doc_sentencizer/config.yml
   - name: qaExecutor
     uses: qa/config.yml
-    needs: docChunkerExecutor
+    needs: [docChunkerExecutor, docSentencizerExecutor]
   - name: classifierExecutor
     uses: classifier/config.yml
     needs: docChunkerExecutor
@@ -17,4 +19,3 @@ executors:
     uses: merger/config.yml
     needs: [qaExecutor, classifierExecutor]
     disable_reduce: True
-    

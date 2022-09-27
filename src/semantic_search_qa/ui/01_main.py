@@ -108,18 +108,18 @@ with st.form("main-form", clear_on_submit=True):
     query = st.text_input("Query", "Who's increasing the rates?")
     n_of_results = st.slider("Number of Results", min_value=1, max_value=10, value=5)
 
-    with st.spinner("Getting response"):
-        submit_btn = st.form_submit_button(label="Fire!")
-        if submit_btn:
-            req_args = {
-                "raw_doc_text": text_content,
-                "query": query,
-                "host": client_params["host"],
-                "port": client_params["port"],
-                "endpoint": "/doc_chunker",
-                "n_of_results": n_of_results,
-            }
-            send_qa_request(**req_args)
+    submit_btn = st.form_submit_button(label="Fire!")
+    if submit_btn:
+        req_args = {
+            "raw_doc_text": text_content,
+            "query": query,
+            "host": client_params["host"],
+            "port": client_params["port"],
+            "endpoint": "/doc_sentencizer",
+            "n_of_results": n_of_results,
+        }
+        send_qa_request(**req_args)
+
 
 try:
     if st.session_state["feedback_sent"]:
@@ -130,6 +130,7 @@ except KeyError:
 st.header("Results")
 
 docs = st.session_state.results
+
 for i, doc in enumerate(docs):
 
     st.markdown(f"### Document {i}")
