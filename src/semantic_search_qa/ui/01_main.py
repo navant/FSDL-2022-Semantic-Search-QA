@@ -116,7 +116,7 @@ with st.form("main-form", clear_on_submit=True):
             "query": query,
             "host": client_params["host"],
             "port": client_params["port"],
-            "endpoint": "/doc_chunker",
+            "endpoint": "/doc_sentencizer",
             "n_of_results": n_of_results,
         }
         send_qa_request(**req_args)
@@ -130,6 +130,7 @@ except KeyError:
 st.header("Results")
 
 docs = st.session_state.results
+
 for i, doc in enumerate(docs):
     st.markdown(f"### Document {i}")
     for j, c in enumerate(doc.chunks):

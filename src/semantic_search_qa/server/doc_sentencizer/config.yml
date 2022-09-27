@@ -1,0 +1,4 @@
+jtype: DocSentencizerExecutor
+metas:
+  py_modules:
+    - doc_sentencizer_exec.py
