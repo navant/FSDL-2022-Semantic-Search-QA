@@ -16,4 +16,5 @@ executors:
   - name: mergerExecutor
     uses: merger/config.yml
     needs: [qaExecutor, classifierExecutor]
+    disable_reduce: True
     
