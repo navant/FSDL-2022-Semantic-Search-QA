@@ -1,3 +1,4 @@
+from typing import Any, Dict
 from docarray.score import NamedScore
 from jina import DocumentArray, Executor, requests
 from transformers.pipelines import pipeline

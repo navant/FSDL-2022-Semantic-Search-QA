@@ -39,10 +39,15 @@ def send_qa_request(raw_doc_text: str, query: str, backend: str, host: str, port
     if raw_doc_text == "":
         st.warning("There's no text to send! Add a document or write/copy your text!")
         return
+<<<<<<< HEAD
     if host == '0.0.0.0':
        client = Client(host=host, port=port)
     else:
         client = Client(host=backend)
+=======
+    #client = Client(host=host, port=port)
+    client = Client(host='grpcs://006ea4c540.wolf.jina.ai')
+>>>>>>> 657b145 (    e https://username@github.com/username/repository.gt)
     params = {"query": query, "n_of_results": n_of_results}
     # We send a single Document for now. TODO: Explore the posibiltiy of sending a DocumentArray with more docs
     st.session_state["results"] = client.post(endpoint, Document(text=raw_doc_text), parameters=params)
@@ -63,8 +68,15 @@ st.title("Semantic Question Answering (WIP)")
 
 with st.sidebar:
 
+<<<<<<< HEAD
     st.title("Client Request Params -Enter either Backend or Host ip")
     client_params = {"backend": st.text_input("backend","grpcs://006ea4c540.wolf.jina.ai"),"host": st.text_input("Host", ""), "port": st.text_input("Port", 54321)}
+=======
+    st.title("Client Request Params")
+
+    client_params = {"host": st.text_input("Host", "0.0.0.0"), "port": st.text_input("Port", 54321)}
+    
+>>>>>>> 657b145 (    e https://username@github.com/username/repository.gt)
     st.markdown("## Current config:")
     st.json(client_params)
 
