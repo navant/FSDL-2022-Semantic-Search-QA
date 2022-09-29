@@ -39,7 +39,8 @@ def send_qa_request(raw_doc_text: str, query: str, host: str, port: int, endpoin
     if raw_doc_text == "":
         st.warning("There's no text to send! Add a document or write/copy your text!")
         return
-    client = Client(host=host, port=port)
+    #client = Client(host=host, port=port)
+    client = Client(host='grpcs://006ea4c540.wolf.jina.ai')
     params = {"query": query, "n_of_results": n_of_results}
     # We send a single Document for now. TODO: Explore the posibiltiy of sending a DocumentArray with more docs
     st.session_state["results"] = client.post(endpoint, Document(text=raw_doc_text), parameters=params)
@@ -63,7 +64,7 @@ with st.sidebar:
     st.title("Client Request Params")
 
     client_params = {"host": st.text_input("Host", "0.0.0.0"), "port": st.text_input("Port", 54321)}
-
+    
     st.markdown("## Current config:")
     st.json(client_params)
 

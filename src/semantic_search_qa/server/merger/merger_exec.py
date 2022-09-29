@@ -1,7 +1,14 @@
 from jina import Document, DocumentArray, Executor, requests
 from numpy import append
+from typing import Any,Dict
+from jina.logging.logger import JinaLogger
 
-from semantic_search_qa.server.server_utils import log_exec_basics
+
+# def log_exec_basics(executor_name: str, logger: JinaLogger, docs: DocumentArray, kwargs: dict[str, Any]):
+#    logger.info(f"Exec [{executor_name}] Number of docs received: {len(docs)}")
+#    logger.info(f"Kwargs: {kwargs}")
+#    for i, text_content in enumerate(docs.texts):
+#        logger.info(f"Doc {i} text:\n{text_content}")
 
 
 class MergerExecutor(Executor):
@@ -14,7 +21,7 @@ class MergerExecutor(Executor):
         This executor merges the two parallel tasks and trims the number of returned chunks to the limited
         value specified.
         """
-        log_exec_basics(self.metas.name, self.logger, docs, kwargs)
+    #   log_exec_basics(self.metas.name, self.logger, docs, kwargs)
 
         qa_doc = docs[0]
         cls_doc = docs[1]
