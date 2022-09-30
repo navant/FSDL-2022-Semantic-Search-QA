@@ -25,6 +25,7 @@ class ClassifierExecutor(Executor):
         log_exec_basics(self.metas.name, self.logger, docs, kwargs)
 
         for d in docs:
+            d.modality = "classifier"
             for c in d.chunks:
                 cls_result = self.cls_pipeline(c.text)
                 self.logger.info(cls_result)

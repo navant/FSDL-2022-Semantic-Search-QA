@@ -1,4 +1,8 @@
 jtype: DocChunkerExecutor
+with:
+  chunk_len: 500
+  do_overlap: True
+  overlap_char_len: 100
 metas:
   py_modules:
     - doc_chunker_exec.py

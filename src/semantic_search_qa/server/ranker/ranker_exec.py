@@ -1,8 +1,4 @@
-from typing import Any, Dict
-
-from docarray.score import NamedScore
 from jina import DocumentArray, Executor, requests
-from transformers.pipelines import pipeline
 
 from semantic_search_qa.server.server_utils import log_exec_basics
 
@@ -10,7 +6,7 @@ param_top_k_ranker = 3
 model = "anablasi/qa_financial_v2"
 
 
-class RankingExecutor(Executor):
+class RankerExecutor(Executor):
     def __init__(self, device: str = "cpu", *args, **kwargs):
         """The Ranking executor running on a CPU or a GPU
 
@@ -26,5 +22,4 @@ class RankingExecutor(Executor):
         self.logger.info(f"--------------------------- Returning only {limit_result_idx} results")
 
         for d in docs:
-            d.chunks = sorted(d.chunks, key=lambda x: x["score"], reverse=True)[:limit_result_idx]
-            
+            d.chunks = sorted(d.chunks, key=lambda c: c.scores["qa_score"].value, reverse=True)[:limit_result_idx]

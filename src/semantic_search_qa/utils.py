@@ -44,3 +44,15 @@ def chunk_text(text: str, chunk_len: int = 256, do_overlap: bool = False, overla
         else:
             i = i + chunk_len
     return chunks
+
+
+def remove_special_chars(text):
+    """
+    Remove newlines and tabs.
+
+    Don't want to remove punctuation or case because it can convey sentiment or other contextual information.
+    """
+    text = text.split()
+    text = " ".join(text)
+
+    return text

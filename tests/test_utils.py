@@ -1,4 +1,4 @@
-from semantic_search_qa.utils import chunk_text, pdf2text
+from semantic_search_qa.utils import chunk_text, pdf2text, remove_special_chars
 
 
 def test_pdf2text():
@@ -24,3 +24,17 @@ def test_chunk_text():
     assert chunked_text[3] == "tal\n"
     assert chunked_text[4] == "\nest"
     assert chunked_text[5] == "tas?"
+
+
+def test_remove_special_chars():
+    text = """
+    hello,      how    are
+    you. I'm good but      you
+    don't seem so.
+
+    I could be wrong.
+    """
+    expected_text = "hello, how are you. I'm good but you don't seem so. I could be wrong."
+
+    cleaned_text = remove_special_chars(text)
+    assert cleaned_text == expected_text
