@@ -1,0 +1,4 @@
+jtype: DocCleanerExecutor
+metas:
+  py_modules:
+    - doc_cleaner_exec.py
