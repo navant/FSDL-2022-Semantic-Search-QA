@@ -1,0 +1,4 @@
+jtype: QueryGeneratorExecutor
+metas:
+  py_modules:
+    - query_generator_exec.py

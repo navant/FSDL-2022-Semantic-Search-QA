@@ -13,6 +13,9 @@ executors:
   - name: docSentencizerExecutor
     uses: doc_sentencizer/config.yml
     needs: docCleanerExecutor
+  - name: queryGeneratorExecutor
+    uses: query_generator/config.yml
+    needs: docSentencizerExecutor
   - name: qaExecutor
     uses: qa/config.yml
     needs: docChunkerExecutor
@@ -24,5 +27,5 @@ executors:
     needs: docSentencizerExecutor
   - name: mergerExecutor
     uses: merger/config.yml
-    needs: [rankerExecutor, classifierExecutor]
+    needs: [rankerExecutor, classifierExecutor, queryGeneratorExecutor]
     disable_reduce: True

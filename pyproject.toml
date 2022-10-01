@@ -18,6 +18,7 @@ jina = "v3.8.0"
 "pdfminer.six" = "^20220524"
 protobuf = "3.19.4"                    # required by wandb. Older version b.c. OSX bug with latest protobuf...
 wandb = "^0.13.3"
+sentencepiece = "^0.1.97"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.8.0"
