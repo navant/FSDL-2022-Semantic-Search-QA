@@ -3,7 +3,7 @@ from jina import DocumentArray, Executor, requests
 from semantic_search_qa.server.server_utils import log_exec_basics
 
 param_top_k_ranker = 3
-model = "anablasi/qa_financial_v2"
+# model = "anablasi/qa_financial_v2"
 
 
 class RankerExecutor(Executor):
