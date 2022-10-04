@@ -15,7 +15,7 @@ class DocCleanerExecutor(Executor):
 
         This assumes that the input documents in the DocumentArray doesn't have nested chunks.
         """
-        log_exec_basics(self.metas.name, self.logger, docs, kwargs)
+        #log_exec_basics(self.metas.name, self.logger, docs, kwargs)
 
         for d in docs:
             d.text = remove_special_chars(d.text)
