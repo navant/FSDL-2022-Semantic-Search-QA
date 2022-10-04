@@ -7,7 +7,7 @@ with:
 executors:
   - name: docCleanerExecutor
     uses: doc_cleaner/config.yml
-  - name: DocChunkerExecutor
+  - name: docChunkerExecutor
     uses: doc_chunker/config.yml
     needs: docCleanerExecutor
   - name: docSentencizerExecutor
@@ -22,8 +22,8 @@ executors:
   - name: classifierExecutor
     uses: classifier/config.yml
     needs: docSentencizerExecutor
-  - name: MergerExecutor
+  - name: mergerExecutor
     uses: merger/config.yml
     needs: [rankerExecutor, classifierExecutor]
     disable_reduce: True
-
+    

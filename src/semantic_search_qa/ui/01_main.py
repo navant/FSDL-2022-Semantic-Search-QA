@@ -140,11 +140,7 @@ with st.form("main-form", clear_on_submit=True):
             "backend":client_params["backend"],
             "host": client_params["host"],
             "port": client_params["port"],
-<<<<<<< HEAD
             "endpoint": "/doc_cleaner",
-=======
-            "endpoint": "/doc_chunker",  # TODO Improve this entry point to have a better name
->>>>>>> e4fd0ba (update)
             "n_of_results": n_of_results,
         }
         send_qa_request(**req_args)

@@ -4,12 +4,11 @@ from typing import Any,Dict
 from jina.logging.logger import JinaLogger
 
 
-def log_exec_basics(executor_name: str, logger: JinaLogger, docs: DocumentArray, kwargs: dict[str, Any]):
-    logger.info(f"Exec [{executor_name}] Number of docs received: {len(docs)}")
-    logger.info(f"Kwargs: {kwargs}")
-    for i, text_content in enumerate(docs.texts):
-        logger.info(f"Doc {i} text:\n{text_content}")
-
+#def log_exec_basics(executor_name: str, logger: JinaLogger, docs: DocumentArray, kwargs: dict[str, Any]):
+#    logger.info(f"Exec [{executor_name}] Number of docs received: {len(docs)}")
+#    logger.info(f"Kwargs: {kwargs}")
+#   for i, text_content in enumerate(docs.texts):
+#        logger.info(f"Doc {i} text:\n{text_content}")
 
 class MergerExecutor(Executor):
     def __init__(self, *args, **kwargs):
@@ -21,14 +20,20 @@ class MergerExecutor(Executor):
         This executor merges the two parallel tasks and trims the number of returned chunks to the limited
         value specified.
         """
+<<<<<<< HEAD
 
+=======
+>>>>>>> 8351977 (update)
         assert len(docs) == 2  # 2 docs received, the qa and the classifier documents
 
      # log_exec_basics(self.metas.name, self.logger, docs, kwargs)
 
         self.logger.info(100 * "_" + " Merger " + 100 * "_")
+<<<<<<< HEAD
 
        #log_exec_basics(self.metas.name, self.logger, docs, kwargs)
+=======
+>>>>>>> 8351977 (update)
 
         qa_doc, cls_doc = (docs[0], docs[1]) if docs[0].modality == "qa" else (docs[1], docs[0])
 
