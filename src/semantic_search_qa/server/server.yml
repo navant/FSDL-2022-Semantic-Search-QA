@@ -16,7 +16,7 @@ executors:
   - name: qaExecutor
     uses: qa/config.yml
     needs: docChunkerExecutor
-  - name: RankerExecutor
+  - name: rankerExecutor
     uses: ranker/config.yml
     needs: qaExecutor    
   - name: classifierExecutor
@@ -26,3 +26,4 @@ executors:
     uses: merger/config.yml
     needs: [rankerExecutor, classifierExecutor]
     disable_reduce: True
+
