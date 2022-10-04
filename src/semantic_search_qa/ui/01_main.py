@@ -117,7 +117,7 @@ with st.form("main-form", clear_on_submit=True):
             "backend":client_params["backend"],
             "host": client_params["host"],
             "port": client_params["port"],
-            "endpoint": "/doc_chunker",
+            "endpoint": "/doc_cleaner",  # TODO Improve this entry point to have a better name
             "n_of_results": n_of_results,
         }
         send_qa_request(**req_args)
@@ -129,91 +129,103 @@ try:
 except KeyError:
     st.stop()
 
-st.header("Results")
-
 docs = st.session_state.results
+st.header(f"Results (Responses/docs received {len(docs)})")
+
+st.markdown(f"")
 
 for i, doc in enumerate(docs):
 
     st.markdown(f"### Document {i}")
 
-    best_qa_response = doc.chunks[0].tags["qa"]["answer"]
-    best_qa_score = doc.chunks[0].scores["qa_score"].value
-    st.markdown(
-        f"#### Best response: <span style='font-family:sans-serif; color:Green;'>{best_qa_response} (Score {best_qa_score:.5f})</span>",
-        unsafe_allow_html=True,
-    )
+    qa_doc = doc.chunks[0]
+    cls_doc = doc.chunks[1]
 
-    for j, c in enumerate(doc.chunks):
-        st.markdown(f"### Chunk {j}")
-        c1, c2, c3 = st.columns(3)
-        with c1:
-            # QA part
-            st.markdown(f"##### QA Score: {c.scores['qa_score'].value:.5f}")
-            start = int(c.tags["qa"]["start"])
-            end = int(c.tags["qa"]["end"])
-            start_text = c.text[:start]
-            target_text = c.text[start:end]
-            end_text = c.text[end:]
-            st.markdown(
-                f"{start_text} <mark><span style='font-family:sans-serif; color:Green;'>{target_text}</span></mark> {end_text}",
-                unsafe_allow_html=True,
+    qa_tab, cls_tab = st.tabs(["Question/Answer", "Classification"])
+    with qa_tab:
+        best_qa_response = qa_doc.chunks[0].tags["qa"]["answer"]
+        best_qa_score = qa_doc.chunks[0].scores["qa_score"].value
+        st.markdown(
+            f"#### Best response: <span style='font-family:sans-serif; color:Green;'>{best_qa_response} (Score {best_qa_score:.5f})</span>",
+            unsafe_allow_html=True,
+        )
+        for j, c in enumerate(qa_doc.chunks):
+            st.markdown(f"### Chunk {j}")
+            c1, c2 = st.columns(2)
+            with c1:
+                # QA part
+                st.markdown(f"##### QA Score: {c.scores['qa_score'].value:.5f}")
+                start = int(c.tags["qa"]["start"])
+                end = int(c.tags["qa"]["end"])
+                start_text = c.text[:start]
+                target_text = c.text[start:end]
+                end_text = c.text[end:]
+                st.markdown(
+                    f"{start_text} <mark><span style='font-family:sans-serif; color:Green;'>{target_text}</span></mark> {end_text}",
+                    unsafe_allow_html=True,
+                )
+            with c2:
+                st.write("**QA results details**")
+                st.json(f"{c.tags['qa']}")
+
+        st.markdown("## QA Feedback")
+
+        # Put this into session state to get it inside form
+        n_of_qa_results = len(st.session_state.results[0].chunks[0].chunks)
+        st.session_state.n_of_qa_results = n_of_qa_results
+
+        with st.form("feedback-form", clear_on_submit=True):
+            feedback_file = st.text_input("File to save feedback", "/tmp/feedback.tsv")
+            user_best_answer = st.selectbox(
+                "If you don't like the first answer, what do you think it's the best one?",
+                [str(i) for i in range(0, st.session_state.n_of_qa_results)] + ["Not Provided"],
             )
-            # Sentiment classifier part
-            st.markdown(f"##### CLS Score: {c.scores['cls_score'].value:.5f}")
-            sentiment_str = "N/A"
-            try:
-                doc_sentiment = c.tags["sentiment"]
-                if doc_sentiment["label"] == "positive":
-                    st.success("Positive sentiment!")
-                elif doc_sentiment["label"] == "neutral":
-                    st.warning("Neutral sentiment!")
-                else:
-                    st.error("Negative sentiment!")
-            except KeyError:
-                st.warning("Couldn't retrieve sentiment for this document :-(")
-        with c2:
-            st.write("**QA results details**")
-            st.json(f"{c.tags['qa']}")
-        with c3:
-            st.write("**Classifier results details**")
-            st.json(f"{c.tags['sentiment']}")
 
-st.markdown("## Feedback")
+            c1, c2 = st.columns([1, 1])
+            with c1:
+                feedback_submit_btn = st.form_submit_button("Improve output!")
+            with c2:
+                nah_btn = st.form_submit_button("Nah!")
 
-# Put this into session state to get it inside form
-st.session_state.n_results = len(st.session_state.results[0].chunks)
+            if feedback_submit_btn:
+                feedback_data = {
+                    "file": feedback_file,
+                    "text": text_content,
+                    "query": query,
+                    "best_predicted_answer": qa_doc.chunks[0].tags["qa"]["answer"],
+                    "user_preferred_answer": qa_doc.chunks[int(user_best_answer)].tags["qa"]["answer"]
+                    if user_best_answer != "Not Provided"
+                    else "Not Provided",
+                }
+                save_feedback(**feedback_data)
+                st.session_state["feedback_sent"] = True
+                st.success(f"Feedback sent!")
+                sleep(1)
+                clear_text()
+                st.experimental_rerun()
+            if nah_btn:
+                st.session_state["feedback_sent"] = True
+                clear_text()
+                st.experimental_rerun()
 
-with st.form("feedback-form", clear_on_submit=True):
-    feedback_file = st.text_input("File to save feedback", "/tmp/feedback.tsv")
-    user_best_answer = st.selectbox(
-        "If you don't like the first answer, what do you think it's the best one?",
-        [str(i) for i in range(0, st.session_state.n_results)] + ["Not Provided"],
-    )
-
-    c1, c2 = st.columns([1, 1])
-    with c1:
-        feedback_submit_btn = st.form_submit_button("Improve output!")
-    with c2:
-        nah_btn = st.form_submit_button("Nah!")
-
-    if feedback_submit_btn:
-        feedback_data = {
-            "file": feedback_file,
-            "text": text_content,
-            "query": query,
-            "best_predicted_answer": docs[0].text,
-            "user_preferred_answer": docs[0].chunks[int(user_best_answer)].text
-            if user_best_answer != "Not Provided"
-            else "Not Provided",
-        }
-        save_feedback(**feedback_data)
-        st.session_state["feedback_sent"] = True
-        st.success(f"Feedback sent!")
-        sleep(1)
-        clear_text()
-        st.experimental_rerun()
-    if nah_btn:
-        st.session_state["feedback_sent"] = True
-        clear_text()
-        st.experimental_rerun()
+    with cls_tab:
+        for j, c in enumerate(cls_doc.chunks):
+            st.markdown(f"### Sentence {j}")
+            c1, c2 = st.columns(2)
+            with c1:
+                # Sentiment classifier part
+                st.markdown(f"##### CLS Score: {c.scores['cls_score'].value:.5f}")
+                sentiment_str = "N/A"
+                try:
+                    doc_sentiment = c.tags["sentiment"]
+                    if doc_sentiment["label"] == "positive":
+                        st.success(c.text)
+                    elif doc_sentiment["label"] == "neutral":
+                        st.warning(c.text)
+                    else:
+                        st.error(c.text)
+                except KeyError:
+                    st.warning("Couldn't retrieve sentiment for this document :-(")
+            with c2:
+                st.write("**Classifier results details**")
+                st.json(f"{c.tags['sentiment']}")

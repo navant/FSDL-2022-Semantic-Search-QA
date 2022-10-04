@@ -5,20 +5,24 @@ with:
   port: 54321
   
 executors:
+  - name: docCleanerExecutor
+    uses: doc_cleaner/config.yml
   - name: docChunkerExecutor
     uses: doc_chunker/config.yml
+    needs: docCleanerExecutor
   - name: docSentencizerExecutor
     uses: doc_sentencizer/config.yml
+    needs: docCleanerExecutor
   - name: qaExecutor
     uses: qa/config.yml
-    needs: [docChunkerExecutor, docSentencizerExecutor]
-  - name: RankingExecutor
+    needs: docChunkerExecutor
+  - name: RankerExecutor
     uses: ranker/config.yml
-    needs: qaExecutor
+    needs: qaExecutor    
   - name: classifierExecutor
     uses: classifier/config.yml
-    needs: docChunkerExecutor
+    needs: docSentencizerExecutor
   - name: mergerExecutor
     uses: merger/config.yml
-    needs: [qaExecutor, classifierExecutor]
+    needs: [rankerExecutor, classifierExecutor]
     disable_reduce: True

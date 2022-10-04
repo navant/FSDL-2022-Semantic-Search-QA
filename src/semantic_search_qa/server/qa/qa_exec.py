@@ -1,4 +1,3 @@
-from typing import Any, Dict
 from docarray.score import NamedScore
 from jina import DocumentArray, Executor, requests
 from transformers.pipelines import pipeline
@@ -27,15 +26,6 @@ class QAExecutor(Executor):
         self.logger.info(f"Creating HF pipeline for QA from model {model}")
         self.qa_pipeline = pipeline("question-answering", model=model)
 
-    # TODO This should be done in the ranker based on
-    def qa_ranker(self, query, paragraphs, top_k_ranker):
-        ans = []
-        for doc in paragraphs:
-            answer: Dict[str, Any] = self.qa_pipeline({"question": query, "context": doc})
-            answer["doc"] = doc
-            ans.append(answer)
-        return sorted(ans, key=lambda x: x["score"], reverse=True)[:top_k_ranker]
-
     @requests  # (on="/qa")
     async def add_text(self, docs: DocumentArray, **kwargs):
      #   log_exec_basics(self.metas.name, self.logger, docs, kwargs)
@@ -43,6 +33,7 @@ class QAExecutor(Executor):
         query = kwargs["parameters"]["query"]
         self.logger.info(f"Query: {query}")
         for d in docs:
+            d.modality = "qa"
             for c in d.chunks:
                 answer = self.qa_pipeline({"question": query, "context": c.text})
                 self.logger.info(answer)

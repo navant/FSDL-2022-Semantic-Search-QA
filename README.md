@@ -54,14 +54,13 @@ We use streamlit so...
 streamlit run src/semantic_search_qa/ui/01_main.py
 ```
 
-To communicate with server also run
+To run the server part we use [Jina](https://docs.jina.ai/), so...
 
 ```sh
 jina flow -v --uses src/semantic_search_qa/server/server.yml
 ```
 
 It is best to run each of these commands in a separate terminal so that you can see the outputs of both.
-
 
 Then check it out here: [http://localhost:8501/](http://localhost:8501/)
 
@@ -79,5 +78,3 @@ You will receive the responses below and a form to optionally provide feedback a
 ### Notes
 - v3.8.0 doesn't show depency problems
 - If an error similar to `...may have been in progress in another thread when fork() was called` shows in your Mac, do `export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES`
-
-

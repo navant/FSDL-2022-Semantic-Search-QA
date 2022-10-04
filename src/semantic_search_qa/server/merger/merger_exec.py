@@ -21,27 +21,17 @@ class MergerExecutor(Executor):
         This executor merges the two parallel tasks and trims the number of returned chunks to the limited
         value specified.
         """
-       #log_exec_basics(self.metas.name, self.logger, docs, kwargs)
+        assert len(docs) == 2  # 2 docs received, the qa and the classifier documents
 
-        qa_doc = docs[0]
-        cls_doc = docs[1]
+     # log_exec_basics(self.metas.name, self.logger, docs, kwargs)
+
+        self.logger.info(100 * "_" + " Merger " + 100 * "_")
+
+        qa_doc, cls_doc = (docs[0], docs[1]) if docs[0].modality == "qa" else (docs[1], docs[0])
 
         new_doc = Document(text=qa_doc.text)
-        new_chunks = DocumentArray()  # type: ignore
-        for qa_c, cls_c in zip(qa_doc.chunks, cls_doc.chunks):
-            new_chunk = qa_c
-            new_chunk.tags["sentiment"] = cls_c.tags["sentiment"]
-            new_chunk.scores["cls_score"] = cls_c.scores["cls_score"]
-            new_chunks.append(new_chunk)
-        new_doc.chunks = new_chunks
+        new_doc.modality = "merged"
+        new_doc.chunks = DocumentArray([qa_doc, cls_doc])
+        self.logger.info(new_doc.summary())
 
-        new_da = DocumentArray(new_doc)
-        self.logger.info(new_da[0].summary())
-
-        # TODO Do this here or in the ranker? Maybe here to give this exec a a purpose...
-        limit_result_idx = int(kwargs["parameters"]["n_of_results"])
-        for i, d in enumerate(new_da):
-            self.logger.info(f"Limiting doc {i} from {len(docs[i].chunks)} results to {limit_result_idx}")
-            d.chunks = d.chunks[:limit_result_idx]
-
-        return new_da
+        return DocumentArray(new_doc)
