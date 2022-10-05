@@ -44,7 +44,7 @@ def send_qa_request(raw_doc_text: str, query: str, backend: str, host: str, port
 =======
 >>>>>>> b90006b (    e https://username@github.com/username/repository.gt)
     if host == '0.0.0.0':
-       client = Client(host=host, port=port)
+        client = Client(host=host, port=port)
     else:
         client = Client(host=backend)
 <<<<<<< HEAD
@@ -129,7 +129,7 @@ with c2:
 
 
 with st.form("main-form", clear_on_submit=True):
-    query = st.text_input("Query", "Who's increasing the rates?")
+    query = st.text_input("")
     n_of_results = st.slider("Number of Results", min_value=1, max_value=10, value=5)
 
     submit_btn = st.form_submit_button(label="Fire!")
