@@ -39,21 +39,10 @@ def send_qa_request(raw_doc_text: str, query: str, backend: str, host: str, port
     if raw_doc_text == "":
         st.warning("There's no text to send! Add a document or write/copy your text!")
         return
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> b90006b (    e https://username@github.com/username/repository.gt)
     if host == '0.0.0.0':
-        client = Client(host=host, port=port)
+       client = Client(host=host, port=port)
     else:
         client = Client(host=backend)
-<<<<<<< HEAD
-=======
-    #client = Client(host=host, port=port)
-    client = Client(host='grpcs://006ea4c540.wolf.jina.ai')
->>>>>>> 657b145 (    e https://username@github.com/username/repository.gt)
-=======
->>>>>>> b90006b (    e https://username@github.com/username/repository.gt)
     params = {"query": query, "n_of_results": n_of_results}
     # We send a single Document for now. TODO: Explore the posibiltiy of sending a DocumentArray with more docs
     st.session_state["results"] = client.post(endpoint, Document(text=raw_doc_text), parameters=params)
@@ -61,12 +50,10 @@ def send_qa_request(raw_doc_text: str, query: str, backend: str, host: str, port
     st.session_state["feedback_sent"] = False
     st.session_state["text_disabled"] = True
 
-
 def save_feedback(file: str, text: str, query: str, best_predicted_answer: str, user_preferred_answer: str):
     with open(file, "a") as f:
         writer = csv.writer(f, delimiter="\t", lineterminator="\n")
         writer.writerow([text, query, best_predicted_answer, user_preferred_answer])
-
 
 st.set_page_config(page_title="Semantic Question Answering (WIP)", page_icon="🎈", layout="wide")
 
@@ -74,20 +61,8 @@ st.title("Semantic Question Answering (WIP)")
 
 with st.sidebar:
 
-<<<<<<< HEAD
-<<<<<<< HEAD
     st.title("Client Request Params -Enter either Backend or Host ip")
     client_params = {"backend": st.text_input("backend","grpcs://006ea4c540.wolf.jina.ai"),"host": st.text_input("Host", ""), "port": st.text_input("Port", 54321)}
-=======
-    st.title("Client Request Params")
-
-    client_params = {"host": st.text_input("Host", "0.0.0.0"), "port": st.text_input("Port", 54321)}
-    
->>>>>>> 657b145 (    e https://username@github.com/username/repository.gt)
-=======
-    st.title("Client Request Params -Enter either Backend or Host ip")
-    client_params = {"backend": st.text_input("backend","grpcs://006ea4c540.wolf.jina.ai"),"host": st.text_input("Host", ""), "port": st.text_input("Port", 54321)}
->>>>>>> b90006b (    e https://username@github.com/username/repository.gt)
     st.markdown("## Current config:")
     st.json(client_params)
 
@@ -129,7 +104,7 @@ with c2:
 
 
 with st.form("main-form", clear_on_submit=True):
-    query = st.text_input("")
+    query = st.text_input("Query", "Who's increasing the rates?")
     n_of_results = st.slider("Number of Results", min_value=1, max_value=10, value=5)
 
     submit_btn = st.form_submit_button(label="Fire!")
@@ -140,7 +115,7 @@ with st.form("main-form", clear_on_submit=True):
             "backend":client_params["backend"],
             "host": client_params["host"],
             "port": client_params["port"],
-            "endpoint": "/doc_cleaner",
+            "endpoint": "/doc_cleaner",  # TODO Improve this entry point to have a better name
             "n_of_results": n_of_results,
         }
         send_qa_request(**req_args)

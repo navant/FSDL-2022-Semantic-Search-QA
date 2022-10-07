@@ -15,3 +15,4 @@ tqdm==4.64.1
 transformers==4.22.2
 typing_extensions==4.3.0
 urllib3==1.26.12
+cryptography == 38.0.1
