@@ -42,7 +42,9 @@ def send_qa_request(raw_doc_text: str, query: str, host: str, port: int, endpoin
     client = Client(host=host, port=port)
     params = {"query": query, "n_of_results": n_of_results}
     # We send a single Document for now. TODO: Explore the posibiltiy of sending a DocumentArray with more docs
-    st.session_state["results"] = client.post(endpoint, Document(text=raw_doc_text, tags = {'button': 'fire'}), parameters=params)
+    st.session_state["results"] = client.post(
+        endpoint, Document(text=raw_doc_text, tags={"button": "fire"}), parameters=params
+    )
     clear_text()
     st.session_state["feedback_sent"] = False
     st.session_state["text_disabled"] = True
@@ -54,7 +56,7 @@ def send_querygen_request(raw_doc_text: str, host: str, port: int, endpoint: str
     In this context, n_of_results is the number of queries to return.
     The queries are just taken from the first 10 sentences of text.
     """
-    
+
     if raw_doc_text == "":
         st.warning("There's no text to send! Add a document or write/copy your text!")
         return
@@ -63,11 +65,11 @@ def send_querygen_request(raw_doc_text: str, host: str, port: int, endpoint: str
     # We can filter documents through the flow by their tag, but we still have to pass in "valid-looking"
     # parameters or the flow will crash.
     params = {"query": "", "n_of_results": n_of_results}
-    
-    # We send a single Document for now. TODO: Explore the posibiltiy of sending a DocumentArray with more docs
-    st.session_state["generated_queries"] = client.post(endpoint, Document(text=raw_doc_text,
-                                                                           tags = {'button': 'generate_queries_button'}), parameters=params)
 
+    # We send a single Document for now. TODO: Explore the posibiltiy of sending a DocumentArray with more docs
+    st.session_state["generated_queries"] = client.post(
+        endpoint, Document(text=raw_doc_text, tags={"button": "generate_queries_button"}), parameters=params
+    )
 
 
 def save_feedback(file: str, text: str, query: str, best_predicted_answer: str, user_preferred_answer: str):
@@ -119,7 +121,7 @@ with c2:
     uploaded_file = st.file_uploader("Pick a file", disabled=content_disabled)
     if uploaded_file is not None:
         st.session_state["text"] = extract_content(uploaded_file)
-        
+
         text_content = text_content_placeholder.text_area(
             "Content (max 500 words)", st.session_state["text"], height=510, disabled=content_disabled, key="k2"
         )
@@ -127,31 +129,29 @@ with c2:
         st.session_state["text"] = example_doc
 
 
-#with st.form("generate-queries-form"):
+# with st.form("generate-queries-form"):
 
 
-        
 with st.form("main-form", clear_on_submit=True):
     query = st.text_input("Query", "Who's increasing the rates?")
-    
+
     ## TO DO:
     # 1. Update selectbox options with query results
     # 2. Fill in input box with selectbox choice
 
     generate_queries_btn = st.form_submit_button(label="Generate Queries")
-    st.session_state['selected_sample_query'] = st.selectbox(
-        'Sample queries',
-        options = (),
-        on_change=None, #todo
+    st.session_state["selected_sample_query"] = st.selectbox(
+        "Sample queries",
+        options=(),
+        on_change=None,  # todo
     )
 
-
     if generate_queries_btn:
-    
+
         querygen_req_args = {
             "raw_doc_text": st.session_state["text"],
             "host": client_params["host"],
-            "port": client_params["port"]            
+            "port": client_params["port"],
         }
         send_querygen_request(**querygen_req_args)
 
@@ -161,8 +161,6 @@ with st.form("main-form", clear_on_submit=True):
                 st.write(c.text)
                 print(c.text)
 
-    
-    
     n_of_results = st.slider("Number of Results", min_value=1, max_value=10, value=5)
 
     submit_btn = st.form_submit_button(label="Fire!")

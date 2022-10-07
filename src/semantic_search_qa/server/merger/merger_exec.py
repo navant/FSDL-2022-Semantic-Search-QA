@@ -15,15 +15,13 @@ class MergerExecutor(Executor):
         value specified.
         """
 
-        
-
         log_exec_basics(self.metas.name, self.logger, docs, kwargs)
 
         self.logger.info(100 * "_" + " Merger " + 100 * "_")
 
-        self.logger.info(docs[0].tags['button'])
+        self.logger.info(docs[0].tags["button"])
 
-        if docs[0].tags['button'] == 'fire':
+        if docs[0].tags["button"] == "fire":
             assert len(docs) == 2  # 2 docs received, the qa and the classifier documents
             qa_doc, cls_doc = (docs[0], docs[1]) if docs[0].modality == "qa" else (docs[1], docs[0])
 
@@ -34,10 +32,8 @@ class MergerExecutor(Executor):
             self.logger.info(new_doc.summary())
             return DocumentArray(new_doc)
 
-
-        elif docs[0].tags['button'] == 'upload':
+        elif docs[0].tags["button"] == "upload":
             assert len(docs) == 1
             for c in docs[0].chunks:
                 self.logger.info(c.text)
-            return docs            
-
+            return docs
