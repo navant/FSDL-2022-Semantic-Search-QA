@@ -2,6 +2,7 @@ from jina import Document, DocumentArray, Executor, Flow, requests
 
 from semantic_search_qa.server.server_utils import log_exec_basics
 
+import random
 
 class QueryGeneratorExecutor(Executor):
     def __init__(self, *args, **kwargs):
@@ -30,17 +31,21 @@ class QueryGeneratorExecutor(Executor):
         """
         log_exec_basics(self.metas.name, self.logger, docs, kwargs)
 
-        n_of_results = int(kwargs["parameters"]["n_of_results"])
-
+        # Only anticipating 1 doc for now
         for d in docs:
             d.modality = "querygen"
-            self.query_gen.doc2query(d.chunks[:n_of_results])
 
-            # Transform into new document with chunks
-            # The .text attribute of each chunk holds the query.
-            d.chunks = [c.chunks[k] for k in range(self.n_questions_per_sentence) for c in d.chunks[:n_of_results]]
+            n_of_results = min(len(d.chunks), int(kwargs["parameters"]["n_of_results"]))
 
+            # Return n_of_results random chunks, sampling without replacement.
+            sampled_chunks = DocumentArray(random.sample(d.chunks, k=n_of_results))
+            
+            self.query_gen.doc2query(sampled_chunks)
 
+            # Replace document chunks with the subset that has queries attached.
+            d.chunks = [c.chunks[k] for k in range(self.n_questions_per_sentence) for c in sampled_chunks]
+
+            # Postprocessing queries to be nicer.
             for chunk in d.chunks:
                 # Add a question mark to the end of each query
                 if chunk.text[-1] != "?":
