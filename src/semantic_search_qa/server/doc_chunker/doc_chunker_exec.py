@@ -1,11 +1,10 @@
+from typing import List
+
 from importlib_metadata import SelectableGroups
 from jina import Document, DocumentArray, Executor, requests
-from typing import BinaryIO, List, cast
-from typing import Any, Dict
 from jina.logging.logger import JinaLogger
 
-
-#def log_exec_basics(executor_name: str, logger: JinaLogger, docs: DocumentArray, kwargs: dict[str, Any]):
+# def log_exec_basics(executor_name: str, logger: JinaLogger, docs: DocumentArray, kwargs: dict[str, Any]):
 #    logger.info(f"Exec [{executor_name}] Number of docs received: {len(docs)}")
 #    logger.info(f"Kwargs: {kwargs}")
 #    for i, text_content in enumerate(docs.texts):
@@ -42,7 +41,7 @@ class DocChunkerExecutor(Executor):
         Document.
         This will be probably used as the 1st step in the Doc Processing Pipeline
         """
- #       log_exec_basics(self.metas.name, self.logger, docs, kwargs)
+        #       log_exec_basics(self.metas.name, self.logger, docs, kwargs)
 
         try:
             chunk_len = int(kwargs["parameters"]["chunk_len"])
