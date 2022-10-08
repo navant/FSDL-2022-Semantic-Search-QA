@@ -1,6 +1,6 @@
 from jina import DocumentArray, Executor, requests
 
-from semantic_search_qa.server.server_utils import log_exec_basics
+# from semantic_search_qa.server.server_utils import log_exec_basics
 
 param_top_k_ranker = 3
 # model = "anablasi/qa_financial_v2"
@@ -16,7 +16,7 @@ class RankerExecutor(Executor):
 
     @requests  # (on="/qa")
     async def add_text(self, docs: DocumentArray, **kwargs):
-        log_exec_basics(self.metas.name, self.logger, docs, kwargs)
+        # log_exec_basics(self.metas.name, self.logger, docs, kwargs)
 
         limit_result_idx = int(kwargs["parameters"]["n_of_results"])  # TODO This should be done in the ranker
         self.logger.info(f"--------------------------- Returning only {limit_result_idx} results")

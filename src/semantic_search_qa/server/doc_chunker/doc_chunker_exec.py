@@ -1,8 +1,27 @@
+from typing import List
+
 from importlib_metadata import SelectableGroups
 from jina import Document, DocumentArray, Executor, requests
+from jina.logging.logger import JinaLogger
 
-from semantic_search_qa.server.server_utils import log_exec_basics
-from semantic_search_qa.utils import chunk_text
+# def log_exec_basics(executor_name: str, logger: JinaLogger, docs: DocumentArray, kwargs: dict[str, Any]):
+#    logger.info(f"Exec [{executor_name}] Number of docs received: {len(docs)}")
+#    logger.info(f"Kwargs: {kwargs}")
+#    for i, text_content in enumerate(docs.texts):
+#        logger.info(f"Doc {i} text:\n{text_content}")
+
+
+def chunk_text(text: str, chunk_len: int = 256, do_overlap: bool = False, overlap_size=15) -> List[str]:
+    # Split text into smaller chunks
+    chunks = []
+    i = 0
+    while i < len(text):
+        chunks.append(text[i : i + chunk_len])
+        if do_overlap:
+            i = i + chunk_len - overlap_size
+        else:
+            i = i + chunk_len
+    return chunks
 
 
 class DocChunkerExecutor(Executor):
@@ -22,7 +41,7 @@ class DocChunkerExecutor(Executor):
         Document.
         This will be probably used as the 1st step in the Doc Processing Pipeline
         """
-        log_exec_basics(self.metas.name, self.logger, docs, kwargs)
+        #       log_exec_basics(self.metas.name, self.logger, docs, kwargs)
 
         try:
             chunk_len = int(kwargs["parameters"]["chunk_len"])

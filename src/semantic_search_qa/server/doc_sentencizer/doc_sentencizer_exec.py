@@ -1,6 +1,6 @@
 from jina import Document, DocumentArray, Executor, requests
 
-from semantic_search_qa.server.server_utils import log_exec_basics
+# from semantic_search_qa.server.server_utils import log_exec_basics
 
 
 class DocSentencizerExecutor(Executor):
@@ -15,7 +15,7 @@ class DocSentencizerExecutor(Executor):
 
         This assumes that the input documents in the DocumentArray doesn't have nested chunks.
         """
-        log_exec_basics(self.metas.name, self.logger, docs, kwargs)
+        # log_exec_basics(self.metas.name, self.logger, docs, kwargs)
 
         self.sentencizer.segment(docs, parameters={})
 

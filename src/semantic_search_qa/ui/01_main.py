@@ -35,11 +35,16 @@ def extract_content(uploaded_file: Optional[st.runtime.uploaded_file_manager.Upl
         return ""
 
 
-def send_qa_request(raw_doc_text: str, query: str, host: str, port: int, endpoint: str = "/qa", n_of_results: int = 5):
+def send_qa_request(
+    raw_doc_text: str, query: str, backend: str, host: str, port: int, endpoint: str = "/qa", n_of_results: int = 5
+):
     if raw_doc_text == "":
         st.warning("There's no text to send! Add a document or write/copy your text!")
         return
-    client = Client(host=host, port=port)
+    if host == "0.0.0.0":
+        client = Client(host=host, port=port)
+    else:
+        client = Client(host=backend)
     params = {"query": query, "n_of_results": n_of_results}
     # We send a single Document for now. TODO: Explore the posibiltiy of sending a DocumentArray with more docs
     st.session_state["results"] = client.post(endpoint, Document(text=raw_doc_text), parameters=params)
@@ -60,21 +65,23 @@ st.title("Semantic Question Answering (WIP)")
 
 with st.sidebar:
 
-    st.title("Client Request Params")
-
-    client_params = {"host": st.text_input("Host", "0.0.0.0"), "port": st.text_input("Port", 54321)}
-
+    st.title("Client Request Params -Enter either Backend or Host ip")
+    client_params = {
+        "backend": st.text_input("backend", "grpcs://006ea4c540.wolf.jina.ai"),
+        "host": st.text_input("Host", ""),
+        "port": st.text_input("Port", 54321),
+    }
     st.markdown("## Current config:")
     st.json(client_params)
 
 with st.expander("ℹ️ - About", expanded=False):
 
     st.write(
-        """     
+        """
 -   A semantic QA for Finance articles done as part of the FSDL Course
 -   More details TBD
 -   Take a look at [streamlit-jina and this article](https://blog.streamlit.io/streamlit-jina-neural-search/)
-	    """
+    """
     )
 
     st.markdown("")
@@ -113,6 +120,7 @@ with st.form("main-form", clear_on_submit=True):
         req_args = {
             "raw_doc_text": text_content,
             "query": query,
+            "backend": client_params["backend"],
             "host": client_params["host"],
             "port": client_params["port"],
             "endpoint": "/doc_cleaner",  # TODO Improve this entry point to have a better name

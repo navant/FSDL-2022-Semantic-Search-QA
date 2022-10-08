@@ -3,7 +3,7 @@ version: '1'
 with:
   # protocol: http
   port: 54321
-  
+
 executors:
   - name: docCleanerExecutor
     uses: doc_cleaner/config.yml
@@ -18,7 +18,7 @@ executors:
     needs: docChunkerExecutor
   - name: rankerExecutor
     uses: ranker/config.yml
-    needs: qaExecutor    
+    needs: qaExecutor
   - name: classifierExecutor
     uses: classifier/config.yml
     needs: docSentencizerExecutor
