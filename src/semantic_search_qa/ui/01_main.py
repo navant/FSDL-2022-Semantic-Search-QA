@@ -77,11 +77,11 @@ with st.sidebar:
 with st.expander("ℹ️ - About", expanded=False):
 
     st.write(
-        """     
+        """
 -   A semantic QA for Finance articles done as part of the FSDL Course
 -   More details TBD
 -   Take a look at [streamlit-jina and this article](https://blog.streamlit.io/streamlit-jina-neural-search/)
-	    """
+    """
     )
 
     st.markdown("")
