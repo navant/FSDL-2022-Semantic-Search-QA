@@ -41,7 +41,7 @@ def send_qa_request(
     if raw_doc_text == "":
         st.warning("There's no text to send! Add a document or write/copy your text!")
         return
-    if (not host):
+    if not host:
         client = Client(host=backend)
         print("sending backend request to jina cloud")
     else:
