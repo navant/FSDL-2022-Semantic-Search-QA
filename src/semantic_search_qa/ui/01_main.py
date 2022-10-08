@@ -41,10 +41,13 @@ def send_qa_request(
     if raw_doc_text == "":
         st.warning("There's no text to send! Add a document or write/copy your text!")
         return
-    if host == "0.0.0.0":
-        client = Client(host=host, port=port)
-    else:
+    if (not host):
         client = Client(host=backend)
+        print("sending backend request to jina cloud")
+    else:
+        client = Client(host=host, port=port)
+        print("sending backend request to local")
+
     params = {"query": query, "n_of_results": n_of_results}
     # We send a single Document for now. TODO: Explore the posibiltiy of sending a DocumentArray with more docs
     st.session_state["results"] = client.post(endpoint, Document(text=raw_doc_text), parameters=params)
@@ -65,9 +68,10 @@ st.title("Semantic Question Answering (WIP)")
 
 with st.sidebar:
 
-    st.title("Client Request Params -Enter either Backend or Host ip")
+    st.title("Backend Config")
+    st.text("if Host is empty send to backend")
     client_params = {
-        "backend": st.text_input("backend", "grpcs://006ea4c540.wolf.jina.ai"),
+        "backend": st.text_input("backend", "grpcs://3c9a39b5e6.wolf.jina.ai"),
         "host": st.text_input("Host", ""),
         "port": st.text_input("Port", 54321),
     }
