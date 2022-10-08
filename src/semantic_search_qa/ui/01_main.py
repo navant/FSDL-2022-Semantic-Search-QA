@@ -129,8 +129,6 @@ with c2:
         st.session_state["text"] = example_doc
 
 
-# with st.form("generate-queries-form"):
-
 
 with st.form("main-form", clear_on_submit=True):
     query = st.text_input("Query", "Who's increasing the rates?")
@@ -139,13 +137,9 @@ with st.form("main-form", clear_on_submit=True):
     # 1. Update selectbox options with query results
     # 2. Fill in input box with selectbox choice
 
-    generate_queries_btn = st.form_submit_button(label="Generate Queries")
-    st.session_state["selected_sample_query"] = st.selectbox(
-        "Sample queries",
-        options=(),
-        on_change=None,  # todo
-    )
+    generate_queries_btn = st.form_submit_button(label="Generate Sample Queries")
 
+    
     if generate_queries_btn:
 
         querygen_req_args = {
@@ -155,11 +149,17 @@ with st.form("main-form", clear_on_submit=True):
         }
         send_querygen_request(**querygen_req_args)
 
-        print("Generated queries")
+        queries = []
         for d in st.session_state.generated_queries:
             for c in d.chunks:
-                st.write(c.text)
-                print(c.text)
+                queries.append(c.text)
+
+        st.session_state["selectbox_query"] = st.selectbox(
+            "Sample queries",
+            options=queries,
+        )
+
+
 
     n_of_results = st.slider("Number of Results", min_value=1, max_value=10, value=5)
 

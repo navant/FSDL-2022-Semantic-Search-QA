@@ -40,6 +40,11 @@ class QueryGeneratorExecutor(Executor):
             # The .text attribute of each chunk holds the query.
             d.chunks = [c.chunks[k] for k in range(self.n_questions_per_sentence) for c in d.chunks[:n_of_results]]
 
-            # Add a question mark to the end of each query
+
             for chunk in d.chunks:
-                chunk.text += "?"
+                # Add a question mark to the end of each query
+                if chunk.text[-1] != "?":
+                    chunk.text += "?"
+
+                # Capitalize question
+                chunk.text = chunk.text.capitalize()
