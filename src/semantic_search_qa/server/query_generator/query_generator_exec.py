@@ -1,8 +1,9 @@
+import random
+
 from jina import Document, DocumentArray, Executor, Flow, requests
 
 from semantic_search_qa.server.server_utils import log_exec_basics
 
-import random
 
 class QueryGeneratorExecutor(Executor):
     def __init__(self, *args, **kwargs):
@@ -39,7 +40,7 @@ class QueryGeneratorExecutor(Executor):
 
             # Return n_of_results random chunks, sampling without replacement.
             sampled_chunks = DocumentArray(random.sample(d.chunks, k=n_of_results))
-            
+
             self.query_gen.doc2query(sampled_chunks)
 
             # Replace document chunks with the subset that has queries attached.

@@ -43,7 +43,7 @@ If you want to run linting before commit, stage files and then run:
 ./project_tasks/lint.sh
 ```
 
-NOTE: If at some point some of the linting errors slows down our goal (e.g. typing with mypy or docstring) we 
+NOTE: If at some point some of the linting errors slows down our goal (e.g. typing with mypy or docstring) we
 can decide to relax the rules.
 
 ### Local Inference App Launch

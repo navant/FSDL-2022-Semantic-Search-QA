@@ -1,10 +1,16 @@
 from docarray.score import NamedScore
 from jina import Document, DocumentArray, Executor, requests
+from jina.logging.logger import JinaLogger
 from transformers.pipelines import pipeline
 
-from semantic_search_qa.server.server_utils import log_exec_basics
-
 model = "ProsusAI/finbert"
+
+
+# def log_exec_basics(executor_name: str, logger: JinaLogger, docs: DocumentArray, kwargs: dict[str, Any]):
+#  logger.info(f"Exec [{executor_name}] Number of docs received: {len(docs)}")
+#  logger.info(f"Kwargs: {kwargs}")
+#  for i, text_content in enumerate(docs.texts):
+#     logger.info(f"Doc {i} text:\n{text_content}")
 
 
 class ClassifierExecutor(Executor):
@@ -22,7 +28,7 @@ class ClassifierExecutor(Executor):
         """
         This executor wraps a ML model to classifies the sentiment of the text passed.
         """
-        log_exec_basics(self.metas.name, self.logger, docs, kwargs)
+        #   log_exec_basics(self.metas.name, self.logger, docs, kwargs)
 
         for d in docs:
             d.modality = "classifier"

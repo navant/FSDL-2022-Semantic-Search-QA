@@ -10,7 +10,6 @@ from jina import Client, Document
 from semantic_search_qa.ui.ui_utils import EXAMPLE_DOC
 from semantic_search_qa.utils import pdf2text
 
-
 current_doc = """""" if "text" not in st.session_state else st.session_state['text']
 current_query = """""" if "query_text" not in st.session_state else st.session_state['query_text']
 
@@ -39,6 +38,7 @@ def extract_content(uploaded_file: Optional[st.runtime.uploaded_file_manager.Upl
         return ""
 
 
+<<<<<<< HEAD
 def load_content(file: str):
     st.session_state["text"] = pdf2text(file)
     st.session_state["query_text"] = file.split("#")[1].split(".")[0]
@@ -47,8 +47,21 @@ def load_content(file: str):
 def send_qa_request(raw_doc_text: str, query: str, host: str, port: int, endpoint: str = "/qa", n_of_results: int = 5):
     if raw_doc_text == "" or query == "":
         st.warning("There's no text or query to send! Add a document or write/copy your text and query!")
+=======
+def send_qa_request(
+    raw_doc_text: str, query: str, backend: str, host: str, port: int, endpoint: str = "/qa", n_of_results: int = 5
+):
+    if raw_doc_text == "":
+        st.warning("There's no text to send! Add a document or write/copy your text!")
+>>>>>>> main
         return
-    client = Client(host=host, port=port)
+    if not host:
+        client = Client(host=backend)
+        print("sending backend request to jina cloud")
+    else:
+        client = Client(host=host, port=port)
+        print("sending backend request to local")
+
     params = {"query": query, "n_of_results": n_of_results}
     # We send a single Document for now. TODO: Explore the posibiltiy of sending a DocumentArray with more docs
     st.session_state["results"] = client.post(
@@ -91,21 +104,24 @@ st.title("Semantic Question Answering (WIP)")
 
 with st.sidebar:
 
-    st.title("Client Request Params")
-
-    client_params = {"host": st.text_input("Host", "0.0.0.0"), "port": st.text_input("Port", 54321)}
-
+    st.title("Backend Config")
+    st.text("if Host is empty send to backend")
+    client_params = {
+        "backend": st.text_input("backend", "grpcs://3c9a39b5e6.wolf.jina.ai"),
+        "host": st.text_input("Host", ""),
+        "port": st.text_input("Port", 54321),
+    }
     st.markdown("## Current config:")
     st.json(client_params)
 
 with st.expander("ℹ️ - About", expanded=False):
 
     st.write(
-        """     
+        """
 -   A semantic QA for Finance articles done as part of the FSDL Course
 -   More details TBD
 -   Take a look at [streamlit-jina and this article](https://blog.streamlit.io/streamlit-jina-neural-search/)
-	    """
+    """
     )
 
     st.markdown("")
@@ -132,9 +148,9 @@ with c2:
         )
     else:
         st.session_state["text"] = current_doc
-    
+
     st.write("...or select one of these examples available:")
-    
+
     pathlist = Path('./src/semantic_search_qa/ui/example_docs').glob('**/*.pdf')
     for path in pathlist:
         path_in_str = str(path.name)
@@ -186,6 +202,7 @@ with st.form("main-form", clear_on_submit=True):
         req_args = {
             "raw_doc_text": text_content,
             "query": query,
+            "backend": client_params["backend"],
             "host": client_params["host"],
             "port": client_params["port"],
             "endpoint": "/doc_cleaner",  # TODO Improve this entry point to have a better name
@@ -199,7 +216,7 @@ with st.form("main-form", clear_on_submit=True):
             st.session_state.pop('results')
         if 'generated_queries' in st.session_state:
             st.session_state.pop('generated_queries')
-        st.experimental_rerun()        
+        st.experimental_rerun()
 
 
 try:
@@ -302,12 +319,12 @@ for i, doc in enumerate(docs):
                 color = '#F8998D'   # Soft Red
                 neg_sent += 1
             sentence += f"<mark><span style='font-family:sans-serif; background-color:{color};'>{c.text}</span></mark>"
-        
+
         # Overall sentiment: https://help.alpha-sense.com/en/articles/4919714-how-we-calculate-sentiment
         # TODO: More can be done on this
         overall_sent = (pos_sent - neg_sent)/len(cls_doc.chunks)
         st.markdown(f"## Overall Document Sentiment Score: {overall_sent:.5f}")
-        st.markdown(f"#### Pos/Neg/Total Sentences: {pos_sent}/{neg_sent}/{len(cls_doc.chunks)}")            
+        st.markdown(f"#### Pos/Neg/Total Sentences: {pos_sent}/{neg_sent}/{len(cls_doc.chunks)}")
         st.markdown(sentence, unsafe_allow_html=True,)
 
         st.markdown(f"## Document Details")
