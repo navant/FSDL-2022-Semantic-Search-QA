@@ -64,7 +64,9 @@ def send_qa_request(
     st.session_state["feedback_sent"] = False
 
 
-def send_querygen_request(raw_doc_text: str, host: str, port: int, backend: str, endpoint: str = "/qa", n_of_results: int = 10):
+def send_querygen_request(
+    raw_doc_text: str, host: str, port: int, backend: str, endpoint: str = "/qa", n_of_results: int = 10
+):
     """
     Send a querygen type request.
     In this context, n_of_results is the number of queries to return.
@@ -97,28 +99,27 @@ def save_feedback(file: str, text: str, query: str, best_predicted_answer: str, 
         writer.writerow([text, query, best_predicted_answer, user_preferred_answer])
 
 
-st.set_page_config(page_title="Semantic Question Answering (WIP)", page_icon="🎈", layout="wide")
+st.set_page_config(page_title="Semantic Searcher", page_icon="🎈", layout="wide")
 
-st.title("Semantic Question Answering (WIP)")
+st.title("Semantic Search and Sentiment Analysis for Financial Domain")
 
 with st.sidebar:
-
-    st.title("Backend Config")
-    st.text("if Host is empty send to backend")
-    client_params = {
+    with st.expander("ℹ️ - Backend config", expanded=False):
+        st.text("Enter Backend  details:")
+        st.text("if Host is empty send to backend")
+        client_params = {
         "backend": st.text_input("backend", "grpcs://3c9a39b5e6.wolf.jina.ai"),
         "host": st.text_input("Host", ""),
         "port": st.text_input("Port", 54321),
-    }
-    st.markdown("## Current config:")
-    st.json(client_params)
+        }
+        st.markdown("## Current config:")
+        st.json(client_params)
 
 with st.expander("ℹ️ - About", expanded=False):
 
     st.write(
         """
 -   A semantic QA for Finance articles done as part of the FSDL Course
--   More details TBD
 -   Take a look at [streamlit-jina and this article](https://blog.streamlit.io/streamlit-jina-neural-search/)
     """
     )

@@ -1,7 +1,7 @@
 from jina import Document, DocumentArray, Executor, requests
 from numpy import append
 
-#from semantic_search_qa.server.server_utils import log_exec_basics
+# from semantic_search_qa.server.server_utils import log_exec_basics
 
 
 class MergerExecutor(Executor):
@@ -15,7 +15,7 @@ class MergerExecutor(Executor):
         value specified.
         """
 
-#       log_exec_basics(self.metas.name, self.logger, docs, kwargs)
+        #       log_exec_basics(self.metas.name, self.logger, docs, kwargs)
 
         self.logger.info(100 * "_" + " Merger " + 100 * "_")
 
@@ -37,4 +37,3 @@ class MergerExecutor(Executor):
             for c in docs[0].chunks:
                 self.logger.info(c.text)
             return docs
-            

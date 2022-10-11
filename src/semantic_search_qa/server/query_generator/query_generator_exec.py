@@ -1,3 +1,5 @@
+import random
+
 from jina import Document, DocumentArray, Executor, Flow, requests
 
 from semantic_search_qa.server.server_utils import log_exec_basics
