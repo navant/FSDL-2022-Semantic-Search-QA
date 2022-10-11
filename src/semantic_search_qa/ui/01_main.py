@@ -10,8 +10,8 @@ from jina import Client, Document
 from semantic_search_qa.ui.ui_utils import EXAMPLE_DOC
 from semantic_search_qa.utils import pdf2text
 
-current_doc = """""" if "text" not in st.session_state else st.session_state['text']
-current_query = """""" if "query_text" not in st.session_state else st.session_state['query_text']
+current_doc = """""" if "text" not in st.session_state else st.session_state["text"]
+current_query = """""" if "query_text" not in st.session_state else st.session_state["query_text"]
 
 
 def clear_text():
@@ -28,7 +28,7 @@ def extract_content(uploaded_file: Optional[st.runtime.uploaded_file_manager.Upl
         if uploaded_file.type == "text/plain":
             # To convert to a string based IO:
             stringio = StringIO(uploaded_file.getvalue().decode("utf-8"))
-            return stringio.read(),
+            return (stringio.read(),)
         elif uploaded_file.type == "application/pdf":
             return pdf2text(uploaded_file)
         else:
@@ -38,22 +38,16 @@ def extract_content(uploaded_file: Optional[st.runtime.uploaded_file_manager.Upl
         return ""
 
 
-<<<<<<< HEAD
 def load_content(file: str):
     st.session_state["text"] = pdf2text(file)
     st.session_state["query_text"] = file.split("#")[1].split(".")[0]
 
 
-def send_qa_request(raw_doc_text: str, query: str, host: str, port: int, endpoint: str = "/qa", n_of_results: int = 5):
-    if raw_doc_text == "" or query == "":
-        st.warning("There's no text or query to send! Add a document or write/copy your text and query!")
-=======
 def send_qa_request(
     raw_doc_text: str, query: str, backend: str, host: str, port: int, endpoint: str = "/qa", n_of_results: int = 5
 ):
-    if raw_doc_text == "":
-        st.warning("There's no text to send! Add a document or write/copy your text!")
->>>>>>> main
+    if raw_doc_text == "" or query == "":
+        st.warning("There's no text or query to send! Add a document or write/copy your text and query!")
         return
     if not host:
         client = Client(host=backend)
@@ -70,7 +64,7 @@ def send_qa_request(
     st.session_state["feedback_sent"] = False
 
 
-def send_querygen_request(raw_doc_text: str, host: str, port: int, endpoint: str = "/qa", n_of_results: int = 10):
+def send_querygen_request(raw_doc_text: str, host: str, port: int, backend: str, endpoint: str = "/qa", n_of_results: int = 10):
     """
     Send a querygen type request.
     In this context, n_of_results is the number of queries to return.
@@ -80,7 +74,12 @@ def send_querygen_request(raw_doc_text: str, host: str, port: int, endpoint: str
     if raw_doc_text == "":
         st.warning("There's no text to send! Add a document or write/copy your text!")
         return
-    client = Client(host=host, port=port)
+    if not host:
+        client = Client(host=backend)
+        print("sending backend request to jina cloud")
+    else:
+        client = Client(host=host, port=port)
+        print("sending backend request to local")
 
     # We can filter documents through the flow by their tag, but we still have to pass in "valid-looking"
     # parameters or the flow will crash.
@@ -135,9 +134,7 @@ with c1:
     except KeyError:
         content = current_doc
     text_content_placeholder = st.empty()
-    text_content = text_content_placeholder.text_area(
-        "Content (max 500 words)", content, height=510, key="k1"
-    )
+    text_content = text_content_placeholder.text_area("Content (max 500 words)", content, height=510, key="k1")
 with c2:
     uploaded_file = st.file_uploader("Pick a file...")
     if uploaded_file is not None:
@@ -151,13 +148,13 @@ with c2:
 
     st.write("...or select one of these examples available:")
 
-    pathlist = Path('./src/semantic_search_qa/ui/example_docs').glob('**/*.pdf')
+    pathlist = Path("./src/semantic_search_qa/ui/example_docs").glob("**/*.pdf")
     for path in pathlist:
         path_in_str = str(path.name)
-        load_btn = st.button(str(path.name), on_click=load_content, args=(str(path), ))
+        load_btn = st.button(str(path.name), on_click=load_content, args=(str(path),))
         if load_btn:
-            if 'results' in st.session_state:
-                st.session_state.pop('results')
+            if "results" in st.session_state:
+                st.session_state.pop("results")
             st.experimental_rerun()
     st.write("⚠️ Remove the picked file above if necessary")
 
@@ -170,11 +167,12 @@ if generate_queries_btn:
         "raw_doc_text": st.session_state["text"],
         "host": client_params["host"],
         "port": client_params["port"],
+        "backend": client_params["backend"],
     }
     send_querygen_request(**querygen_req_args)
 
 
-if 'generated_queries' in st.session_state:
+if "generated_queries" in st.session_state:
     queries = []
     for d in st.session_state.generated_queries:
         for c in d.chunks:
@@ -187,13 +185,12 @@ if 'generated_queries' in st.session_state:
 
 with st.form("main-form", clear_on_submit=True):
 
-    if 'query_text' not in st.session_state:
-        st.session_state['query_text'] = current_query
-    elif 'selectbox_query' in st.session_state:
-        st.session_state['query_text'] = st.session_state["selectbox_query"]
+    if "query_text" not in st.session_state:
+        st.session_state["query_text"] = current_query
+    elif "selectbox_query" in st.session_state:
+        st.session_state["query_text"] = st.session_state["selectbox_query"]
 
-
-    query = st.text_input("Your Query", st.session_state['query_text'])
+    query = st.text_input("Your Query", st.session_state["query_text"])
 
     n_of_results = st.slider("Number of Results for QA", min_value=1, max_value=10, value=5)
 
@@ -212,10 +209,10 @@ with st.form("main-form", clear_on_submit=True):
 
     clear_btn = st.form_submit_button(label="Clear!", on_click=clear_text)
     if clear_btn:
-        if 'results' in st.session_state:
-            st.session_state.pop('results')
-        if 'generated_queries' in st.session_state:
-            st.session_state.pop('generated_queries')
+        if "results" in st.session_state:
+            st.session_state.pop("results")
+        if "generated_queries" in st.session_state:
+            st.session_state.pop("generated_queries")
         st.experimental_rerun()
 
 
@@ -287,8 +284,8 @@ for i, doc in enumerate(docs):
             if feedback_submit_btn:
                 feedback_data = {
                     "file": feedback_file,
-                    "text": st.session_state['text'],
-                    "query": st.session_state['query_text'],
+                    "text": st.session_state["text"],
+                    "query": st.session_state["query_text"],
                     "best_predicted_answer": qa_doc.chunks[0].tags["qa"]["answer"],
                     "user_preferred_answer": qa_doc.chunks[int(user_best_answer)].tags["qa"]["answer"]
                     if user_best_answer != "Not Provided"
@@ -311,21 +308,24 @@ for i, doc in enumerate(docs):
         for j, c in enumerate(cls_doc.chunks):
             doc_sentiment = c.tags["sentiment"]
             if doc_sentiment["label"] == "positive":
-                color = '#ACD1AF'  # Soft Green
+                color = "#ACD1AF"  # Soft Green
                 pos_sent += 1
             elif doc_sentiment["label"] == "neutral":
-                color = '#FEF6D1'  # Soft Blonde/Yellow
+                color = "#FEF6D1"  # Soft Blonde/Yellow
             else:
-                color = '#F8998D'   # Soft Red
+                color = "#F8998D"  # Soft Red
                 neg_sent += 1
             sentence += f"<mark><span style='font-family:sans-serif; background-color:{color};'>{c.text}</span></mark>"
 
         # Overall sentiment: https://help.alpha-sense.com/en/articles/4919714-how-we-calculate-sentiment
         # TODO: More can be done on this
-        overall_sent = (pos_sent - neg_sent)/len(cls_doc.chunks)
+        overall_sent = (pos_sent - neg_sent) / len(cls_doc.chunks)
         st.markdown(f"## Overall Document Sentiment Score: {overall_sent:.5f}")
         st.markdown(f"#### Pos/Neg/Total Sentences: {pos_sent}/{neg_sent}/{len(cls_doc.chunks)}")
-        st.markdown(sentence, unsafe_allow_html=True,)
+        st.markdown(
+            sentence,
+            unsafe_allow_html=True,
+        )
 
         st.markdown(f"## Document Details")
         for j, c in enumerate(cls_doc.chunks):
