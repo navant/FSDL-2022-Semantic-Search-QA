@@ -1,5 +1,6 @@
 import csv
 from io import StringIO
+from pathlib import Path
 from time import sleep
 from typing import Optional
 
@@ -9,23 +10,26 @@ from jina import Client, Document
 from semantic_search_qa.ui.ui_utils import EXAMPLE_DOC
 from semantic_search_qa.utils import pdf2text
 
-example_doc = EXAMPLE_DOC  # or just do """"""
+
+current_doc = """""" if "text" not in st.session_state else st.session_state['text']
+current_query = """""" if "query_text" not in st.session_state else st.session_state['query_text']
 
 
 def clear_text():
-    st.session_state["text"] = example_doc
-    st.session_state["text_disabled"] = False
+    st.session_state["text"] = """"""
+    st.session_state["query_text"] = """"""
+    st.session_state["selectbox_query"] = """"""
 
 
 def extract_content(uploaded_file: Optional[st.runtime.uploaded_file_manager.UploadedFile]):
     if uploaded_file:
         file_details = {"Filename": uploaded_file.name, "FileType": uploaded_file.type, "FileSize": uploaded_file.size}
-        st.markdown("### File Details")
+        st.markdown("### Uploaded File Details")
         st.write(file_details)
         if uploaded_file.type == "text/plain":
             # To convert to a string based IO:
             stringio = StringIO(uploaded_file.getvalue().decode("utf-8"))
-            return stringio.read()
+            return stringio.read(),
         elif uploaded_file.type == "application/pdf":
             return pdf2text(uploaded_file)
         else:
@@ -35,9 +39,14 @@ def extract_content(uploaded_file: Optional[st.runtime.uploaded_file_manager.Upl
         return ""
 
 
+def load_content(file: str):
+    st.session_state["text"] = pdf2text(file)
+    st.session_state["query_text"] = file.split("#")[1].split(".")[0]
+
+
 def send_qa_request(raw_doc_text: str, query: str, host: str, port: int, endpoint: str = "/qa", n_of_results: int = 5):
-    if raw_doc_text == "":
-        st.warning("There's no text to send! Add a document or write/copy your text!")
+    if raw_doc_text == "" or query == "":
+        st.warning("There's no text or query to send! Add a document or write/copy your text and query!")
         return
     client = Client(host=host, port=port)
     params = {"query": query, "n_of_results": n_of_results}
@@ -45,9 +54,7 @@ def send_qa_request(raw_doc_text: str, query: str, host: str, port: int, endpoin
     st.session_state["results"] = client.post(
         endpoint, Document(text=raw_doc_text, tags={"button": "fire"}), parameters=params
     )
-    clear_text()
     st.session_state["feedback_sent"] = False
-    st.session_state["text_disabled"] = True
 
 
 def send_querygen_request(raw_doc_text: str, host: str, port: int, endpoint: str = "/qa", n_of_results: int = 10):
@@ -109,59 +116,70 @@ c1, c2 = st.columns([4, 2])
 with c1:
     try:
         content = st.session_state["text"]
-        content_disabled = st.session_state["text_disabled"]
     except KeyError:
-        content = example_doc
-        content_disabled = False
+        content = current_doc
     text_content_placeholder = st.empty()
     text_content = text_content_placeholder.text_area(
-        "Content (max 500 words)", content, height=510, disabled=content_disabled, key="k1"
+        "Content (max 500 words)", content, height=510, key="k1"
     )
 with c2:
-    uploaded_file = st.file_uploader("Pick a file", disabled=content_disabled)
+    uploaded_file = st.file_uploader("Pick a file...")
     if uploaded_file is not None:
         st.session_state["text"] = extract_content(uploaded_file)
 
         text_content = text_content_placeholder.text_area(
-            "Content (max 500 words)", st.session_state["text"], height=510, disabled=content_disabled, key="k2"
+            "Content (max 500 words)", st.session_state["text"], height=510, key="k2"
         )
     else:
-        st.session_state["text"] = example_doc
+        st.session_state["text"] = current_doc
+    
+    st.write("...or select one of these examples available:")
+    
+    pathlist = Path('./src/semantic_search_qa/ui/example_docs').glob('**/*.pdf')
+    for path in pathlist:
+        path_in_str = str(path.name)
+        load_btn = st.button(str(path.name), on_click=load_content, args=(str(path), ))
+        if load_btn:
+            if 'results' in st.session_state:
+                st.session_state.pop('results')
+            st.experimental_rerun()
+    st.write("⚠️ Remove the picked file above if necessary")
 
 
+generate_queries_btn = st.button(label="Generate Sample Queries")
+
+if generate_queries_btn:
+
+    querygen_req_args = {
+        "raw_doc_text": st.session_state["text"],
+        "host": client_params["host"],
+        "port": client_params["port"],
+    }
+    send_querygen_request(**querygen_req_args)
+
+
+if 'generated_queries' in st.session_state:
+    queries = []
+    for d in st.session_state.generated_queries:
+        for c in d.chunks:
+            queries.append(c.text)
+
+    st.session_state["selectbox_query"] = st.selectbox(
+        "Sample queries",
+        options=queries,
+    )
 
 with st.form("main-form", clear_on_submit=True):
-    query = st.text_input("Query", "Who's increasing the rates?")
 
-    ## TO DO:
-    # 1. Update selectbox options with query results
-    # 2. Fill in input box with selectbox choice
-
-    generate_queries_btn = st.form_submit_button(label="Generate Sample Queries")
-
-    
-    if generate_queries_btn:
-
-        querygen_req_args = {
-            "raw_doc_text": st.session_state["text"],
-            "host": client_params["host"],
-            "port": client_params["port"],
-        }
-        send_querygen_request(**querygen_req_args)
-
-        queries = []
-        for d in st.session_state.generated_queries:
-            for c in d.chunks:
-                queries.append(c.text)
-
-        st.session_state["selectbox_query"] = st.selectbox(
-            "Sample queries",
-            options=queries,
-        )
+    if 'query_text' not in st.session_state:
+        st.session_state['query_text'] = current_query
+    elif 'selectbox_query' in st.session_state:
+        st.session_state['query_text'] = st.session_state["selectbox_query"]
 
 
+    query = st.text_input("Your Query", st.session_state['query_text'])
 
-    n_of_results = st.slider("Number of Results", min_value=1, max_value=10, value=5)
+    n_of_results = st.slider("Number of Results for QA", min_value=1, max_value=10, value=5)
 
     submit_btn = st.form_submit_button(label="Fire!")
     if submit_btn:
@@ -175,9 +193,17 @@ with st.form("main-form", clear_on_submit=True):
         }
         send_qa_request(**req_args)
 
+    clear_btn = st.form_submit_button(label="Clear!", on_click=clear_text)
+    if clear_btn:
+        if 'results' in st.session_state:
+            st.session_state.pop('results')
+        if 'generated_queries' in st.session_state:
+            st.session_state.pop('generated_queries')
+        st.experimental_rerun()        
+
 
 try:
-    if st.session_state["feedback_sent"]:
+    if st.session_state["feedback_sent"] or len(st.session_state["results"]) == 0:
         st.stop()
 except KeyError:
     st.stop()
@@ -189,7 +215,7 @@ st.markdown(f"")
 
 for i, doc in enumerate(docs):
 
-    st.markdown(f"### Document {i}")
+    st.markdown(f"### Document {i}. Query: {query}")
 
     qa_doc = doc.chunks[0]
     cls_doc = doc.chunks[1]
@@ -227,7 +253,7 @@ for i, doc in enumerate(docs):
         n_of_qa_results = len(st.session_state.results[0].chunks[0].chunks)
         st.session_state.n_of_qa_results = n_of_qa_results
 
-        with st.form("feedback-form", clear_on_submit=True):
+        with st.form("feedback-form", clear_on_submit=False):
             feedback_file = st.text_input("File to save feedback", "/tmp/feedback.tsv")
             user_best_answer = st.selectbox(
                 "If you don't like the first answer, what do you think it's the best one?",
@@ -243,8 +269,8 @@ for i, doc in enumerate(docs):
             if feedback_submit_btn:
                 feedback_data = {
                     "file": feedback_file,
-                    "text": text_content,
-                    "query": query,
+                    "text": st.session_state['text'],
+                    "query": st.session_state['query_text'],
                     "best_predicted_answer": qa_doc.chunks[0].tags["qa"]["answer"],
                     "user_preferred_answer": qa_doc.chunks[int(user_best_answer)].tags["qa"]["answer"]
                     if user_best_answer != "Not Provided"
