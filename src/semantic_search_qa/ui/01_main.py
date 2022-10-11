@@ -215,7 +215,7 @@ st.markdown(f"")
 
 for i, doc in enumerate(docs):
 
-    st.markdown(f"### Document {i}. Query: {query}")
+    st.markdown(f"### Document {i}")
 
     qa_doc = doc.chunks[0]
     cls_doc = doc.chunks[1]
@@ -224,6 +224,7 @@ for i, doc in enumerate(docs):
     with qa_tab:
         best_qa_response = qa_doc.chunks[0].tags["qa"]["answer"]
         best_qa_score = qa_doc.chunks[0].scores["qa_score"].value
+        st.markdown(f"### Query: {query}")
         st.markdown(
             f"#### Best response: <span style='font-family:sans-serif; color:Green;'>{best_qa_response} (Score {best_qa_score:.5f})</span>",
             unsafe_allow_html=True,
@@ -288,6 +289,28 @@ for i, doc in enumerate(docs):
                 st.experimental_rerun()
 
     with cls_tab:
+        pos_sent, neg_sent = 0, 0
+        sentence = ""
+        for j, c in enumerate(cls_doc.chunks):
+            doc_sentiment = c.tags["sentiment"]
+            if doc_sentiment["label"] == "positive":
+                color = '#ACD1AF'  # Soft Green
+                pos_sent += 1
+            elif doc_sentiment["label"] == "neutral":
+                color = '#FEF6D1'  # Soft Blonde/Yellow
+            else:
+                color = '#F8998D'   # Soft Red
+                neg_sent += 1
+            sentence += f"<mark><span style='font-family:sans-serif; background-color:{color};'>{c.text}</span></mark>"
+        
+        # Overall sentiment: https://help.alpha-sense.com/en/articles/4919714-how-we-calculate-sentiment
+        # TODO: More can be done on this
+        overall_sent = (pos_sent - neg_sent)/len(cls_doc.chunks)
+        st.markdown(f"## Overall Document Sentiment Score: {overall_sent:.5f}")
+        st.markdown(f"#### Pos/Neg/Total Sentences: {pos_sent}/{neg_sent}/{len(cls_doc.chunks)}")            
+        st.markdown(sentence, unsafe_allow_html=True,)
+
+        st.markdown(f"## Document Details")
         for j, c in enumerate(cls_doc.chunks):
             st.markdown(f"### Sentence {j}")
             c1, c2 = st.columns(2)
