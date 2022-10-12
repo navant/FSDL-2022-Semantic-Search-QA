@@ -108,9 +108,9 @@ with st.sidebar:
         st.text("Enter Backend  details:")
         st.text("if Host is empty send to backend")
         client_params = {
-        "backend": st.text_input("backend", "grpcs://c724f56b46.wolf.jina.ai"),
-        "host": st.text_input("Host", ""),
-        "port": st.text_input("Port", 54321),
+            "backend": st.text_input("backend", "grpcs://c724f56b46.wolf.jina.ai"),
+            "host": st.text_input("Host", ""),
+            "port": st.text_input("Port", 54321),
         }
         st.markdown("## Current config:")
         st.json(client_params)

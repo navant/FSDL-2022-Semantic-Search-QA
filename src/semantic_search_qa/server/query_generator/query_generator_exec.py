@@ -2,7 +2,7 @@ import random
 
 from jina import Document, DocumentArray, Executor, Flow, requests
 
-#from semantic_search_qa.server.server_utils import log_exec_basics
+# from semantic_search_qa.server.server_utils import log_exec_basics
 
 
 class QueryGeneratorExecutor(Executor):
@@ -30,7 +30,7 @@ class QueryGeneratorExecutor(Executor):
         The function modifies the input by adding chunks to docs[i].chunks[j], such that
         docs[i].chunks[j].chunks[k].text is the 'k'th query text for sentence 'j' of document 'i'.
         """
-      #  log_exec_basics(self.metas.name, self.logger, docs, kwargs)
+        #  log_exec_basics(self.metas.name, self.logger, docs, kwargs)
 
         # Only anticipating 1 doc for now
         for d in docs:
