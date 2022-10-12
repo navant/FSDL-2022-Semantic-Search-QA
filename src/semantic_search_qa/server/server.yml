@@ -8,11 +8,20 @@ executors:
   - name: docCleanerExecutor
     uses: doc_cleaner/config.yml
   - name: docChunkerExecutor
+    when:
+      tags__button:
+        $eq: 'fire'
     uses: doc_chunker/config.yml
     needs: docCleanerExecutor
   - name: docSentencizerExecutor
     uses: doc_sentencizer/config.yml
     needs: docCleanerExecutor
+  - name: queryGeneratorExecutor
+    when:
+      tags__button:
+        $eq: 'generate_queries_button'
+    uses: query_generator/config.yml
+    needs: docSentencizerExecutor
   - name: qaExecutor
     uses: qa/config.yml
     needs: docChunkerExecutor
@@ -20,9 +29,12 @@ executors:
     uses: ranker/config.yml
     needs: qaExecutor
   - name: classifierExecutor
+    when:
+      tags__button:
+        $eq: 'fire'
     uses: classifier/config.yml
     needs: docSentencizerExecutor
   - name: mergerExecutor
     uses: merger/config.yml
-    needs: [rankerExecutor, classifierExecutor]
+    needs: [rankerExecutor, classifierExecutor, queryGeneratorExecutor]
     disable_reduce: True

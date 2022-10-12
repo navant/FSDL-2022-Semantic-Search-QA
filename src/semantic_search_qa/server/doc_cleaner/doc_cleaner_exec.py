@@ -20,7 +20,7 @@ class DocCleanerExecutor(Executor):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    @requests(on="/doc_cleaner")
+    @requests  # (on="/doc_cleaner")
     async def clean_doc(self, docs: DocumentArray, **kwargs):
         """
         Cleans documents

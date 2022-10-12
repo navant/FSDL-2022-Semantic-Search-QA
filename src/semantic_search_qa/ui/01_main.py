@@ -1,5 +1,6 @@
 import csv
 from io import StringIO
+from pathlib import Path
 from time import sleep
 from typing import Optional
 
@@ -9,23 +10,25 @@ from jina import Client, Document
 from semantic_search_qa.ui.ui_utils import EXAMPLE_DOC
 from semantic_search_qa.utils import pdf2text
 
-example_doc = EXAMPLE_DOC  # or just do """"""
+current_doc = """""" if "text" not in st.session_state else st.session_state["text"]
+current_query = """""" if "query_text" not in st.session_state else st.session_state["query_text"]
 
 
 def clear_text():
-    st.session_state["text"] = example_doc
-    st.session_state["text_disabled"] = False
+    st.session_state["text"] = """"""
+    st.session_state["query_text"] = """"""
+    st.session_state["selectbox_query"] = """"""
 
 
 def extract_content(uploaded_file: Optional[st.runtime.uploaded_file_manager.UploadedFile]):
     if uploaded_file:
         file_details = {"Filename": uploaded_file.name, "FileType": uploaded_file.type, "FileSize": uploaded_file.size}
-        st.markdown("### File Details")
+        st.markdown("### Uploaded File Details")
         st.write(file_details)
         if uploaded_file.type == "text/plain":
             # To convert to a string based IO:
             stringio = StringIO(uploaded_file.getvalue().decode("utf-8"))
-            return stringio.read()
+            return (stringio.read(),)
         elif uploaded_file.type == "application/pdf":
             return pdf2text(uploaded_file)
         else:
@@ -35,11 +38,16 @@ def extract_content(uploaded_file: Optional[st.runtime.uploaded_file_manager.Upl
         return ""
 
 
+def load_content(file: str):
+    st.session_state["text"] = pdf2text(file)
+    st.session_state["query_text"] = file.split("#")[1].split(".")[0]
+
+
 def send_qa_request(
     raw_doc_text: str, query: str, backend: str, host: str, port: int, endpoint: str = "/qa", n_of_results: int = 5
 ):
-    if raw_doc_text == "":
-        st.warning("There's no text to send! Add a document or write/copy your text!")
+    if raw_doc_text == "" or query == "":
+        st.warning("There's no text or query to send! Add a document or write/copy your text and query!")
         return
     if not host:
         client = Client(host=backend)
@@ -50,10 +58,39 @@ def send_qa_request(
 
     params = {"query": query, "n_of_results": n_of_results}
     # We send a single Document for now. TODO: Explore the posibiltiy of sending a DocumentArray with more docs
-    st.session_state["results"] = client.post(endpoint, Document(text=raw_doc_text), parameters=params)
-    clear_text()
+    st.session_state["results"] = client.post(
+        endpoint, Document(text=raw_doc_text, tags={"button": "fire"}), parameters=params
+    )
     st.session_state["feedback_sent"] = False
-    st.session_state["text_disabled"] = True
+
+
+def send_querygen_request(
+    raw_doc_text: str, host: str, port: int, backend: str, endpoint: str = "/qa", n_of_results: int = 10
+):
+    """
+    Send a querygen type request.
+    In this context, n_of_results is the number of queries to return.
+    The queries are just taken from the first 10 sentences of text.
+    """
+
+    if raw_doc_text == "":
+        st.warning("There's no text to send! Add a document or write/copy your text!")
+        return
+    if not host:
+        client = Client(host=backend)
+        print("sending backend request to jina cloud")
+    else:
+        client = Client(host=host, port=port)
+        print("sending backend request to local")
+
+    # We can filter documents through the flow by their tag, but we still have to pass in "valid-looking"
+    # parameters or the flow will crash.
+    params = {"query": "", "n_of_results": n_of_results}
+
+    # We send a single Document for now. TODO: Explore the posibiltiy of sending a DocumentArray with more docs
+    st.session_state["generated_queries"] = client.post(
+        endpoint, Document(text=raw_doc_text, tags={"button": "generate_queries_button"}), parameters=params
+    )
 
 
 def save_feedback(file: str, text: str, query: str, best_predicted_answer: str, user_preferred_answer: str):
@@ -62,28 +99,27 @@ def save_feedback(file: str, text: str, query: str, best_predicted_answer: str, 
         writer.writerow([text, query, best_predicted_answer, user_preferred_answer])
 
 
-st.set_page_config(page_title="Semantic Question Answering (WIP)", page_icon="🎈", layout="wide")
+st.set_page_config(page_title="Semantic Searcher", page_icon="🎈", layout="wide")
 
-st.title("Semantic Question Answering (WIP)")
+st.title("Semantic Search and Sentiment Analysis for Financial Domain")
 
 with st.sidebar:
-
-    st.title("Backend Config")
-    st.text("if Host is empty send to backend")
-    client_params = {
-        "backend": st.text_input("backend", "grpcs://3c9a39b5e6.wolf.jina.ai"),
-        "host": st.text_input("Host", ""),
-        "port": st.text_input("Port", 54321),
-    }
-    st.markdown("## Current config:")
-    st.json(client_params)
+    with st.expander("ℹ️ - Backend config", expanded=False):
+        st.text("Enter Backend  details:")
+        st.text("if Host is empty send to backend")
+        client_params = {
+            "backend": st.text_input("backend", "grpcs://c724f56b46.wolf.jina.ai"),
+            "host": st.text_input("Host", ""),
+            "port": st.text_input("Port", 54321),
+        }
+        st.markdown("## Current config:")
+        st.json(client_params)
 
 with st.expander("ℹ️ - About", expanded=False):
 
     st.write(
         """
 -   A semantic QA for Finance articles done as part of the FSDL Course
--   More details TBD
 -   Take a look at [streamlit-jina and this article](https://blog.streamlit.io/streamlit-jina-neural-search/)
     """
     )
@@ -96,28 +132,68 @@ c1, c2 = st.columns([4, 2])
 with c1:
     try:
         content = st.session_state["text"]
-        content_disabled = st.session_state["text_disabled"]
     except KeyError:
-        content = example_doc
-        content_disabled = False
+        content = current_doc
     text_content_placeholder = st.empty()
-    text_content = text_content_placeholder.text_area(
-        "Content (max 500 words)", content, height=510, disabled=content_disabled, key="k1"
-    )
+    text_content = text_content_placeholder.text_area("Content (max 500 words)", content, height=510, key="k1")
 with c2:
-    uploaded_file = st.file_uploader("Pick a file", disabled=content_disabled)
+    uploaded_file = st.file_uploader("Pick a file...")
     if uploaded_file is not None:
         st.session_state["text"] = extract_content(uploaded_file)
+
         text_content = text_content_placeholder.text_area(
-            "Content (max 500 words)", st.session_state["text"], height=510, disabled=content_disabled, key="k2"
+            "Content (max 500 words)", st.session_state["text"], height=510, key="k2"
         )
     else:
-        st.session_state["text"] = example_doc
+        st.session_state["text"] = current_doc
 
+    st.write("...or select one of these examples available:")
+
+    pathlist = Path("./src/semantic_search_qa/ui/example_docs").glob("**/*.pdf")
+    for path in pathlist:
+        path_in_str = str(path.name)
+        load_btn = st.button(str(path.name), on_click=load_content, args=(str(path),))
+        if load_btn:
+            if "results" in st.session_state:
+                st.session_state.pop("results")
+            st.experimental_rerun()
+    st.write("⚠️ Remove the picked file above if necessary")
+
+
+generate_queries_btn = st.button(label="Generate Sample Queries")
+
+if generate_queries_btn:
+
+    querygen_req_args = {
+        "raw_doc_text": st.session_state["text"],
+        "host": client_params["host"],
+        "port": client_params["port"],
+        "backend": client_params["backend"],
+    }
+    send_querygen_request(**querygen_req_args)
+
+
+if "generated_queries" in st.session_state:
+    queries = []
+    for d in st.session_state.generated_queries:
+        for c in d.chunks:
+            queries.append(c.text)
+
+    st.session_state["selectbox_query"] = st.selectbox(
+        "Sample queries",
+        options=queries,
+    )
 
 with st.form("main-form", clear_on_submit=True):
-    query = st.text_input("Query", "Who's increasing the rates?")
-    n_of_results = st.slider("Number of Results", min_value=1, max_value=10, value=5)
+
+    if "query_text" not in st.session_state:
+        st.session_state["query_text"] = current_query
+    elif "selectbox_query" in st.session_state:
+        st.session_state["query_text"] = st.session_state["selectbox_query"]
+
+    query = st.text_input("Your Query", st.session_state["query_text"])
+
+    n_of_results = st.slider("Number of Results for QA", min_value=1, max_value=10, value=5)
 
     submit_btn = st.form_submit_button(label="Fire!")
     if submit_btn:
@@ -132,9 +208,17 @@ with st.form("main-form", clear_on_submit=True):
         }
         send_qa_request(**req_args)
 
+    clear_btn = st.form_submit_button(label="Clear!", on_click=clear_text)
+    if clear_btn:
+        if "results" in st.session_state:
+            st.session_state.pop("results")
+        if "generated_queries" in st.session_state:
+            st.session_state.pop("generated_queries")
+        st.experimental_rerun()
+
 
 try:
-    if st.session_state["feedback_sent"]:
+    if st.session_state["feedback_sent"] or len(st.session_state["results"]) == 0:
         st.stop()
 except KeyError:
     st.stop()
@@ -155,6 +239,7 @@ for i, doc in enumerate(docs):
     with qa_tab:
         best_qa_response = qa_doc.chunks[0].tags["qa"]["answer"]
         best_qa_score = qa_doc.chunks[0].scores["qa_score"].value
+        st.markdown(f"### Query: {query}")
         st.markdown(
             f"#### Best response: <span style='font-family:sans-serif; color:Green;'>{best_qa_response} (Score {best_qa_score:.5f})</span>",
             unsafe_allow_html=True,
@@ -184,7 +269,7 @@ for i, doc in enumerate(docs):
         n_of_qa_results = len(st.session_state.results[0].chunks[0].chunks)
         st.session_state.n_of_qa_results = n_of_qa_results
 
-        with st.form("feedback-form", clear_on_submit=True):
+        with st.form("feedback-form", clear_on_submit=False):
             feedback_file = st.text_input("File to save feedback", "/tmp/feedback.tsv")
             user_best_answer = st.selectbox(
                 "If you don't like the first answer, what do you think it's the best one?",
@@ -200,8 +285,8 @@ for i, doc in enumerate(docs):
             if feedback_submit_btn:
                 feedback_data = {
                     "file": feedback_file,
-                    "text": text_content,
-                    "query": query,
+                    "text": st.session_state["text"],
+                    "query": st.session_state["query_text"],
                     "best_predicted_answer": qa_doc.chunks[0].tags["qa"]["answer"],
                     "user_preferred_answer": qa_doc.chunks[int(user_best_answer)].tags["qa"]["answer"]
                     if user_best_answer != "Not Provided"
@@ -219,6 +304,31 @@ for i, doc in enumerate(docs):
                 st.experimental_rerun()
 
     with cls_tab:
+        pos_sent, neg_sent = 0, 0
+        sentence = ""
+        for j, c in enumerate(cls_doc.chunks):
+            doc_sentiment = c.tags["sentiment"]
+            if doc_sentiment["label"] == "positive":
+                color = "#ACD1AF"  # Soft Green
+                pos_sent += 1
+            elif doc_sentiment["label"] == "neutral":
+                color = "#FEF6D1"  # Soft Blonde/Yellow
+            else:
+                color = "#F8998D"  # Soft Red
+                neg_sent += 1
+            sentence += f"<mark><span style='font-family:sans-serif; background-color:{color};'>{c.text}</span></mark>"
+
+        # Overall sentiment: https://help.alpha-sense.com/en/articles/4919714-how-we-calculate-sentiment
+        # TODO: More can be done on this
+        overall_sent = (pos_sent - neg_sent) / len(cls_doc.chunks)
+        st.markdown(f"## Overall Document Sentiment Score: {overall_sent:.5f}")
+        st.markdown(f"#### Pos/Neg/Total Sentences: {pos_sent}/{neg_sent}/{len(cls_doc.chunks)}")
+        st.markdown(
+            sentence,
+            unsafe_allow_html=True,
+        )
+
+        st.markdown(f"## Document Details")
         for j, c in enumerate(cls_doc.chunks):
             st.markdown(f"### Sentence {j}")
             c1, c2 = st.columns(2)
