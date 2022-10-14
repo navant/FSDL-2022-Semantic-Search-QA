@@ -117,15 +117,15 @@ def log_feedback(feedback_dict: dict):
     )
 
     # Log some derived quantities
-    df["text_length"] = len(df["text"])
-    df["best_predicted_output_length"] = len(df["best_predicted_output"])
-    df["user_preferred_answer_length"] = len(df["user_preferred_answer"])
+    df["text_length"] = df["text"].apply(len)
+    df["best_predicted_output_length"] = df["best_predicted_output"].apply(len)
+    df["user_preferred_answer_length"] = df["user_preferred_answer"].apply(len)
 
     os.environ["WHYLABS_DEFAULT_ORG_ID"] = "org-5a67EP"  # ORG-ID is case sensistive
     os.environ["WHYLABS_API_KEY"] = ""
     os.environ[
         "WHYLABS_DEFAULT_DATASET_ID"
-    ] = "model-6"  # The selected model project "qa_model  (model-6)" is "model-6"
+    ] = "model-7"  # The selected model project "qa-model  (model-7)" is "model-7"
 
     results = why.log(pandas=df)
 
