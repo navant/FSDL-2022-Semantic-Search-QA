@@ -10,7 +10,8 @@ try:
         feedback_file,
         sep="\t",
         header=None,
-        names=["text", "query", "best_predicted_answer", "user_preferred_answer"],
+        names=["text", "query", "best_predicted_answer", "best_predicted_answer_score", "best_predicted_answer_chunk",
+               "user_preferred_answer", "user_preferred_answer_score", "user_preferred_answer_chunk"],
     )
     st.dataframe(df)
 except FileNotFoundError:

@@ -19,6 +19,10 @@ jina = "v3.8.0"
 protobuf = "3.19.4"                    # required by wandb. Older version b.c. OSX bug with latest protobuf...
 wandb = "^0.13.3"
 sentencepiece = "^0.1.97"
+pdfkit = "^1.0.0"
+selenium = "^4.5.0"
+webdriver-manager = "^3.8.3"
+whylogs = "^1.1.7"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.8.0"
