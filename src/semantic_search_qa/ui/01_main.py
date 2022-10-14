@@ -1,15 +1,14 @@
 import csv
+import os
 from io import StringIO
 from pathlib import Path
 from time import sleep
 from typing import Optional
 
-import streamlit as st
-from jina import Client, Document
-
-import os
 import pandas as pd
+import streamlit as st
 import whylogs as why
+from jina import Client, Document
 
 from semantic_search_qa.ui.ui_utils import EXAMPLE_DOC
 from semantic_search_qa.utils import pdf2text
@@ -99,6 +98,7 @@ def send_querygen_request(
 
 def save_feedback(file: str, feedback_dict: dict):
     import pprint as pp
+
     pp.pprint(feedback_dict)
     with open(file, "a") as f:
         writer = csv.writer(f, delimiter="\t", lineterminator="\n")
@@ -110,19 +110,25 @@ def log_feedback(feedback_dict: dict):
     df = pd.DataFrame([feedback_dict])
 
     # Rename model outputs to contain the word "output" so that "whylabs" logs it as an output.
-    df.rename(columns={
-        "best_predicted_answer": "best_predicted_output",
-        "best_predicted_answer_score": "best_predicted_output_score",
-        "best_predicted_answer_chunk": "best_predicted_output_chunk"}, inplace=True)
+    df.rename(
+        columns={
+            "best_predicted_answer": "best_predicted_output",
+            "best_predicted_answer_score": "best_predicted_output_score",
+            "best_predicted_answer_chunk": "best_predicted_output_chunk",
+        },
+        inplace=True,
+    )
 
     # Log some derived quantities
     df["text_length"] = len(df["text"])
     df["best_predicted_output_length"] = len(df["best_predicted_output"])
     df["user_preferred_answer_length"] = len(df["user_preferred_answer"])
 
-    os.environ["WHYLABS_DEFAULT_ORG_ID"] = "org-5a67EP" # ORG-ID is case sensistive
+    os.environ["WHYLABS_DEFAULT_ORG_ID"] = "org-5a67EP"  # ORG-ID is case sensistive
     os.environ["WHYLABS_API_KEY"] = ""
-    os.environ["WHYLABS_DEFAULT_DATASET_ID"] = "model-6" # The selected model project "qa_model  (model-6)" is "model-6"
+    os.environ[
+        "WHYLABS_DEFAULT_DATASET_ID"
+    ] = "model-6"  # The selected model project "qa_model  (model-6)" is "model-6"
 
     results = why.log(pandas=df)
 
@@ -130,12 +136,11 @@ def log_feedback(feedback_dict: dict):
         df,
         target_column="user_preferred_answer",
         prediction_column="best_predicted_output",
-        score_column="best_predicted_output_score"
+        score_column="best_predicted_output_score",
     )
 
     results.writer("whylabs").write()
     performance_results.writer("whylabs").write()
-    
 
 
 st.set_page_config(page_title="Semantic Searcher", page_icon="🎈", layout="wide")
@@ -328,9 +333,15 @@ for i, doc in enumerate(docs):
                     "best_predicted_answer": qa_doc.chunks[0].tags["qa"]["answer"],
                     "best_predicted_answer_score": qa_doc.chunks[0].scores["qa_score"].value,
                     "best_predicted_answer_chunk": qa_doc.chunks[0].text,
-                    "user_preferred_answer": qa_doc.chunks[int(user_best_answer)].tags["qa"]["answer"] if user_best_answer != "Not Provided" else "Not Provided",
-                    "user_preferred_answer_score": qa_doc.chunks[int(user_best_answer)].scores["qa_score"].value if user_best_answer != "Not Provided" else 0,
-                    "user_preferred_answer_chunk": qa_doc.chunks[int(user_best_answer)].text if user_best_answer != "Not Provided" else "Not Provided",
+                    "user_preferred_answer": qa_doc.chunks[int(user_best_answer)].tags["qa"]["answer"]
+                    if user_best_answer != "Not Provided"
+                    else "Not Provided",
+                    "user_preferred_answer_score": qa_doc.chunks[int(user_best_answer)].scores["qa_score"].value
+                    if user_best_answer != "Not Provided"
+                    else 0,
+                    "user_preferred_answer_chunk": qa_doc.chunks[int(user_best_answer)].text
+                    if user_best_answer != "Not Provided"
+                    else "Not Provided",
                 }
                 save_feedback(feedback_file, feedback_data)
                 log_feedback(feedback_data)
