@@ -33,7 +33,7 @@ class ClassifierExecutor(Executor):
         for d in docs:
             d.modality = "classifier"
             for c in d.chunks:
-                cls_result = self.cls_pipeline(c.text)
+                cls_result = self.cls_pipeline(c.text, truncation=True)
                 self.logger.info(cls_result)
                 c.scores["cls_score"] = NamedScore(value=cls_result[0]["score"], description="classification score")
                 c.tags["sentiment"] = cls_result[0]
