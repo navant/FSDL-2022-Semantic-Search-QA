@@ -109,23 +109,28 @@ def log_feedback(feedback_dict: dict):
 
     df = pd.DataFrame([feedback_dict])
 
-    os.environ["WHYLABS_DEFAULT_ORG_ID"] = "org-5a67EP" # ORG-ID is case sensistive
-    os.environ["WHYLABS_API_KEY"] = ""
-    os.environ["WHYLABS_DEFAULT_DATASET_ID"] = "model-5" # The selected model project "qa-model  (model-5)" is "model-5"
+    # Rename model outputs to contain the word "output" so that "whylabs" logs it as an output.
+    df.rename(columns={
+        "best_predicted_answer": "best_predicted_output",
+        "best_predicted_answer_score": "best_predicted_output_score",
+        "best_predicted_answer_chunk": "best_predicted_output_chunk"}, inplace=True)
 
-    
     # Log some derived quantities
     df["text_length"] = len(df["text"])
-    df["best_predicted_answer_length"] = len(df["best_predicted_answer"])
+    df["best_predicted_output_length"] = len(df["best_predicted_output"])
     df["user_preferred_answer_length"] = len(df["user_preferred_answer"])
+
+    os.environ["WHYLABS_DEFAULT_ORG_ID"] = "org-5a67EP" # ORG-ID is case sensistive
+    os.environ["WHYLABS_API_KEY"] = ""
+    os.environ["WHYLABS_DEFAULT_DATASET_ID"] = "model-6" # The selected model project "qa_model  (model-6)" is "model-6"
 
     results = why.log(pandas=df)
 
     performance_results = why.log_classification_metrics(
         df,
         target_column="user_preferred_answer",
-        prediction_column="best_predicted_answer",
-        score_column="best_predicted_answer_score"
+        prediction_column="best_predicted_output",
+        score_column="best_predicted_output_score"
     )
 
     results.writer("whylabs").write()
