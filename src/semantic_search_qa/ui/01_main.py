@@ -97,9 +97,6 @@ def send_querygen_request(
 
 
 def save_feedback(file: str, feedback_dict: dict):
-    import pprint as pp
-
-    pp.pprint(feedback_dict)
     with open(file, "a") as f:
         writer = csv.writer(f, delimiter="\t", lineterminator="\n")
         writer.writerow(list(feedback_dict.values()))
