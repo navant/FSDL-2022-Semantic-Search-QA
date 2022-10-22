@@ -41,6 +41,14 @@ Technology Choices
     - Decomposing the data pipeline into isolated “Executor” units.
     - Using tags to filter data stream through Flow.
 
+# Screenshots
+## Main UI
+![ui1.png](images/ui1.png)
+## Semantic Search Results
+![ui2.png](images/ui2.png)
+## Sentiment Results
+![ui3.png](images/ui3.png)
+
 # Local Installation
 
 ## **Dev Instructions**
@@ -74,7 +82,7 @@ Main considerations:
 
 - 120 chars per line (setup your editor for that)
 - FSDL chose google style over pep8 (we can change it if we want to)
-
+ex
 Adopted linting strategy from FSDL Course adding isort and autoflake for dealing with imports.
 
 If you want to run linting before commit, stage files and then run:
@@ -154,8 +162,7 @@ jc login
 In Jina, a project is a [Flow](https://docs.jina.ai/fundamentals/flow/), which represents an end-to-end task such as indexing, searching or recommending.
 
 <aside>
-💡 **Caution:** Flows have a maximal lifetime after which they are automatically deleted.
-
+**💡 **Caution:** Flows have a maximal lifetime of 72 hours after which they are automatically deleted.
 </aside>
 
 A Flow can have two types of file structure: a single YAML file or a project folder.
